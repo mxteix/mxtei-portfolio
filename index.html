@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="mxtei — Marcell Szoke. Freelancer for payments, community growth, Discord bots, outreach automation, and custom builds. 50,000+ members scaled."
+    />
+    <meta name="theme-color" content="#08060f" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <title>mxtei — Freelancer</title>
+  </head>
+  <body>
+    <canvas id="live-bg" aria-hidden="true"></canvas>
+
+    <nav class="nav">
+      <div class="container nav-inner">
+        <a href="#" class="logo"><span data-brand>mxtei</span></a>
+        <div class="nav-actions">
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+            <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+          <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <ul class="nav-links">
+          <li><a href="#capabilities">Work</a></li>
+          <li><a href="#reviews">Reviews</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact" class="nav-cta">Hire mxtei</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div class="container hero-content">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          Available for freelance work
+        </div>
+        <p class="hero-motto" data-motto>You ask, I complete.</p>
+        <h1>
+          I'm <span class="gradient-text" data-brand>mxtei</span>.<br />
+          <span class="gradient-text-alt">Payments.</span> Communities. Bots. Done.
+        </h1>
+        <p class="hero-sub">
+          <span data-fullname>Marcell Szoke</span> — freelancer building at the intersection of payments, community growth, and automation.
+        </p>
+        <p class="hero-tagline" data-tagline></p>
+        <div class="hero-actions">
+          <a href="#contact" class="btn btn-primary">
+            Start a project
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+          <a href="#reviews" class="btn btn-secondary">See reviews</a>
+        </div>
+        <div class="hero-stats" id="hero-stats"></div>
+      </div>
+    </header>
+
+    <div class="marquee-wrap" aria-hidden="true">
+      <div class="marquee" id="marquee-track"></div>
+    </div>
+
+    <section id="capabilities">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-label">What I do</div>
+          <h2>Capabilities</h2>
+          <p>From 50,000+ member Discord ecosystems to precision outreach bots — I build what you need and adapt to whatever you ask for.</p>
+        </div>
+        <div class="capabilities-grid" id="capabilities-grid"></div>
+      </div>
+    </section>
+
+    <section id="reviews" class="reviews-section">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-label">Client feedback</div>
+          <h2>What people say</h2>
+          <p>
+            <span class="rating-badge"><span id="avg-rating">4.8</span> ★ average</span>
+            across community growth, bot development, and payment projects.
+          </p>
+        </div>
+        <div class="reviews-grid" id="reviews-grid"></div>
+      </div>
+    </section>
+
+    <section id="skills" class="skills-section">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-label">Toolbox</div>
+          <h2>Skills &amp; platforms</h2>
+        </div>
+        <div class="skills-cloud reveal" id="skills-cloud"></div>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-label">About</div>
+          <h2>Built to deliver</h2>
+        </div>
+        <div class="about-grid">
+          <div class="about-text reveal">
+            <p>
+              I'm <strong data-brand>mxtei</strong> — <span data-fullname>Marcell Szoke</span>, a freelancer who works in payments and builds the systems that power communities at scale. I've helped create, manage, and grow Discord servers for companies and communities into ecosystems with over <strong>50,000 members overall</strong>.
+            </p>
+            <p>
+              That includes Instagram groups, Facebook groups, and an abundance of Discord bots — plus outreach robots that excel at messaging specific audiences and communities according to your input. Whether you need a moderation bot, a growth engine, or a full outreach pipeline, I make it work.
+            </p>
+            <p>
+              I handle AI deeply, script in JavaScript, Lua, Python, and more, and I'm actively learning UI/UX design. I adapt quickly to whatever the customer wants — custom requests are always welcome.
+            </p>
+          </div>
+          <div class="about-highlights reveal">
+            <div class="highlight-item">
+              <div class="highlight-icon pink">50k+</div>
+              <div>
+                <strong>Community scale</strong>
+                <span>Discord servers grown and managed for brands and communities worldwide.</span>
+              </div>
+            </div>
+            <div class="highlight-item">
+              <div class="highlight-icon purple">∞</div>
+              <div>
+                <strong>Custom bots &amp; outreach</strong>
+                <span>Discord, Instagram, Facebook — bots that reach the right people automatically.</span>
+              </div>
+            </div>
+            <div class="highlight-item">
+              <div class="highlight-icon red">✓</div>
+              <div>
+                <strong>You ask, I complete</strong>
+                <span>No rigid packages. Tell me what you need and I'll make it happen.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-label">Get in touch</div>
+          <h2>Let's work together</h2>
+          <p>Reach out with your project. Flexible payment via PayPal, crypto, Revolut, and more.</p>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-card reveal">
+            <h3>Email me</h3>
+            <p>Best way to reach me for new projects, quotes, and custom requests.</p>
+            <div class="emails-list" id="emails-list"></div>
+          </div>
+          <div class="contact-card reveal">
+            <h3>Payment options</h3>
+            <p>PayPal, crypto, Revolut, and other methods — just ask.</p>
+            <div class="payment-options" id="payment-options"></div>
+          </div>
+        </div>
+        <div class="custom-request reveal">
+          <p class="custom-motto" data-motto>You ask, I complete.</p>
+          <p>Have something unique in mind? Describe your project and let's build it.</p>
+          <a href="#" class="btn btn-primary" data-mailto>Send a custom request</a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <p class="footer-copy">
+          © <span id="year">2026</span> <span data-brand>mxtei</span> · <span data-fullname>Marcell Szoke</span>
+          <span class="footer-domain">mxtei.com coming soon</span>
+        </p>
+        <div class="footer-social" id="footer-social"></div>
+      </div>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/background.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
