@@ -3,7 +3,7 @@
   if (!canvas) return;
 
   const ctx = canvas.getContext("2d");
-  let w, h, frame = 0;
+  let w, h;
   let mouse = { x: 0.5, y: 0.5 };
 
   const blobs = [
@@ -83,7 +83,7 @@
     ctx.save();
     ctx.textAlign = "center";
 
-    const floatY = Math.sin(t * 0.001) * 12;
+    const floatY = Math.sin(t) * 12;
     const centerX = w / 2;
     const centerY = h * 0.42 + floatY;
 
@@ -104,7 +104,7 @@
     ctx.fillStyle = grad2;
     ctx.fillText(text2, centerX, centerY + 100);
 
-    const pulse = 0.5 + Math.sin(t * 0.002) * 0.5;
+    const pulse = 0.5 + Math.sin(t * 2) * 0.5;
     ctx.strokeStyle = light
       ? `rgba(168,85,247,${0.06 + pulse * 0.04})`
       : `rgba(255,45,120,${0.08 + pulse * 0.06})`;
@@ -119,7 +119,7 @@
   function drawGrid(t) {
     const light = isLight();
     const spacing = 80;
-    const offset = (t * 0.02) % spacing;
+    const offset = (t * 20) % spacing;
     ctx.strokeStyle = light ? "rgba(168,85,247,0.04)" : "rgba(255,255,255,0.02)";
     ctx.lineWidth = 1;
 
@@ -137,8 +137,9 @@
     }
   }
 
-  function animate(t) {
-    frame = t;
+  // Every draw function takes seconds; blob/particle speeds are tuned in Hz.
+  function animate(ms) {
+    const t = ms / 1000;
     drawBackground();
     drawGrid(t);
     drawBlobs(t);
