@@ -10,24 +10,24 @@
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0}
 :root{
-  --bg:#060a18; --bg2:#0b1533; --surface:rgba(255,255,255,.045); --surface2:rgba(120,160,255,.1);
-  --border:rgba(120,160,255,.15); --text:#eaf1ff; --muted:#9fb2d8; --faint:rgba(200,215,255,.5);
-  --purple:#7c6cff; --pink:#3d8bff; --red:#38bdf8;
-  --grad:linear-gradient(115deg,#7c6cff 0%,#3d8bff 52%,#38bdf8 100%);
-  --glow-p:rgba(124,108,255,.5); --glow-k:rgba(61,139,255,.5);
+  --bg:#0b0508; --bg2:#26101c; --surface:rgba(255,200,222,.05); --surface2:rgba(255,140,185,.11);
+  --border:rgba(255,150,192,.17); --text:#fff2f7; --muted:#e6b3c8; --faint:rgba(255,224,238,.5);
+  --purple:#ff9ec9; --pink:#ff5c96; --red:#ff86b8;
+  --grad:linear-gradient(115deg,#ffd2e2 0%,#ff6aa6 50%,#ff2d7e 100%);
+  --glow-p:rgba(255,150,196,.5); --glow-k:rgba(255,92,150,.5);
 }
 [data-theme="light"]{
-  --bg:#eef3ff; --bg2:#dbe6ff; --surface:rgba(20,45,110,.035); --surface2:rgba(20,45,110,.07);
-  --border:rgba(20,55,130,.13); --text:#0d1b3a; --muted:#4a5b82; --faint:rgba(13,27,58,.5);
-  --purple:#5b4ee0; --pink:#2563eb; --red:#0891b2;
-  --grad:linear-gradient(115deg,#5b4ee0 0%,#2563eb 52%,#0ea5e9 100%);
-  --glow-p:rgba(91,78,224,.26); --glow-k:rgba(37,99,235,.22);
+  --bg:#fff2f7; --bg2:#ffdcea; --surface:rgba(255,92,150,.05); --surface2:rgba(255,92,150,.1);
+  --border:rgba(221,70,131,.16); --text:#1a0710; --muted:#96566f; --faint:rgba(26,7,16,.5);
+  --purple:#e5468b; --pink:#d61f6b; --red:#ff5c96;
+  --grad:linear-gradient(115deg,#ff9dc0 0%,#ff4d8f 50%,#e01e66 100%);
+  --glow-p:rgba(255,130,180,.32); --glow-k:rgba(224,60,120,.26);
 }
 a{color:var(--pink);text-decoration:none}
 a:hover{color:var(--purple)}
@@ -42,20 +42,20 @@ a:hover{color:var(--purple)}
 @keyframes slowShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes glitchA{
   0%,62%,100%{transform:translate(0,0);filter:none;clip-path:none}
-  64%{transform:translate(9px,-3px);filter:drop-shadow(-3px 0 var(--pink)) drop-shadow(2px 0 #7c6cff);clip-path:inset(0 55% 60% 0)}
-  66%{transform:translate(-10px,4px);filter:drop-shadow(3px 0 #38bdf8);clip-path:inset(60% 0 0 55%)}
+  64%{transform:translate(9px,-3px);filter:drop-shadow(-3px 0 var(--pink)) drop-shadow(2px 0 #ff2d7e);clip-path:inset(0 55% 60% 0)}
+  66%{transform:translate(-10px,4px);filter:drop-shadow(3px 0 #ffc2dc);clip-path:inset(60% 0 0 55%)}
   68%{transform:translate(7px,2px);filter:drop-shadow(-2px 0 #ffffff);clip-path:inset(0 0 70% 0)}
-  70%{transform:translate(-8px,-3px);filter:drop-shadow(3px 0 #7c6cff);clip-path:inset(0 60% 0 0)}
-  72%{transform:translate(5px,3px);filter:drop-shadow(-3px 0 #38bdf8);clip-path:inset(55% 55% 0 0)}
+  70%{transform:translate(-8px,-3px);filter:drop-shadow(3px 0 #ff2d7e);clip-path:inset(0 60% 0 0)}
+  72%{transform:translate(5px,3px);filter:drop-shadow(-3px 0 #ffc2dc);clip-path:inset(55% 55% 0 0)}
   74%{transform:translate(-4px,0);filter:none;clip-path:none}
 }
 @keyframes glitchB{
   0%,58%,100%{transform:translate(0,0);filter:none;clip-path:none}
-  60%{transform:translate(-11px,3px);filter:drop-shadow(3px 0 #7c6cff) drop-shadow(-2px 0 var(--pink));clip-path:inset(0 0 0 58%)}
-  62%{transform:translate(9px,-4px);filter:drop-shadow(-3px 0 #38bdf8);clip-path:inset(0 55% 0 0)}
+  60%{transform:translate(-11px,3px);filter:drop-shadow(3px 0 #ff2d7e) drop-shadow(-2px 0 var(--pink));clip-path:inset(0 0 0 58%)}
+  62%{transform:translate(9px,-4px);filter:drop-shadow(-3px 0 #ffc2dc);clip-path:inset(0 55% 0 0)}
   64%{transform:translate(-7px,-3px);filter:drop-shadow(3px 0 #ffffff);clip-path:inset(65% 0 0 0)}
-  66%{transform:translate(8px,4px);filter:drop-shadow(-3px 0 #7c6cff);clip-path:inset(0 0 55% 55%)}
-  68%{transform:translate(-6px,2px);filter:drop-shadow(2px 0 #38bdf8);clip-path:inset(30% 30% 30% 0)}
+  66%{transform:translate(8px,4px);filter:drop-shadow(-3px 0 #ff2d7e);clip-path:inset(0 0 55% 55%)}
+  68%{transform:translate(-6px,2px);filter:drop-shadow(2px 0 #ffc2dc);clip-path:inset(30% 30% 30% 0)}
   70%{transform:translate(4px,0);filter:none;clip-path:none}
 }
 @keyframes gradFlow{0%{background-position:0% 50%}100%{background-position:200% 50%}}
@@ -69,6 +69,8 @@ a:hover{color:var(--purple)}
 @keyframes blobA{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(42px,22px) scale(1.28)}}
 @keyframes blobB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-36px,-18px) scale(1.34)}}
 @keyframes iconFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-9px) rotate(7deg)}}
+@keyframes branchSway{0%,100%{transform:rotate(-1deg)}50%{transform:rotate(1.6deg)}}
+@keyframes bloomPulse{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
 ::selection{background:var(--pink);color:#fff}
 </style>
 </helmet>
@@ -78,6 +80,50 @@ a:hover{color:var(--purple)}
     <div style="position:absolute;top:-12%;left:-8%;width:46vw;height:46vw;border-radius:50%;background:radial-gradient(circle,var(--glow-p),transparent 62%);opacity:.5;filter:blur(30px);animation:floaty 34s ease-in-out infinite"></div>
     <div style="position:absolute;bottom:-16%;right:-8%;width:44vw;height:44vw;border-radius:50%;background:radial-gradient(circle,var(--glow-k),transparent 62%);opacity:.42;filter:blur(30px);animation:floaty2 40s ease-in-out infinite"></div>
     <canvas id="mxtei-net" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+      <radialGradient id="cbPetal" cx="50%" cy="30%" r="72%">
+        <stop offset="0%" stop-color="#ffffff"/><stop offset="52%" stop-color="#ffc4d8"/><stop offset="100%" stop-color="#ff6aa6"/>
+      </radialGradient>
+      <g id="cbBloom">
+        <ellipse cx="0" cy="-11" rx="7.5" ry="11" fill="url(#cbPetal)"/>
+        <ellipse cx="0" cy="-11" rx="7.5" ry="11" fill="url(#cbPetal)" transform="rotate(72)"/>
+        <ellipse cx="0" cy="-11" rx="7.5" ry="11" fill="url(#cbPetal)" transform="rotate(144)"/>
+        <ellipse cx="0" cy="-11" rx="7.5" ry="11" fill="url(#cbPetal)" transform="rotate(216)"/>
+        <ellipse cx="0" cy="-11" rx="7.5" ry="11" fill="url(#cbPetal)" transform="rotate(288)"/>
+        <circle r="3.4" fill="#ff2d7f"/><circle r="1.2" cx="2" cy="-2" fill="#fff2a8"/>
+      </g>
+    </defs></svg>
+    <div style="position:absolute;top:-24px;left:-30px;width:min(42vw,470px);transform-origin:top left;opacity:.92">
+      <div style="animation:branchSway 7s ease-in-out infinite;transform-origin:top left">
+        <svg viewBox="0 0 470 330" style="display:block;width:100%;height:auto;overflow:visible">
+          <path d="M-20 -20 C 70 25, 150 15, 205 65 S 320 145, 445 135" stroke="#1c0e15" stroke-width="9" stroke-linecap="round" fill="none"/>
+          <path d="M150 48 C 178 66, 196 108, 200 158" stroke="#1c0e15" stroke-width="6" stroke-linecap="round" fill="none"/>
+          <path d="M300 112 C 332 124, 360 158, 372 212" stroke="#1c0e15" stroke-width="5" stroke-linecap="round" fill="none"/>
+          <use href="#cbBloom" transform="translate(30,6) scale(1.15)"/>
+          <use href="#cbBloom" transform="translate(96,26) scale(.72)"/>
+          <use href="#cbBloom" transform="translate(150,44) scale(1.02)"/>
+          <use href="#cbBloom" transform="translate(205,62) scale(1.28)"/>
+          <use href="#cbBloom" transform="translate(200,158) scale(.92)"/>
+          <use href="#cbBloom" transform="translate(300,110) scale(.8)"/>
+          <use href="#cbBloom" transform="translate(372,212) scale(.88)"/>
+          <use href="#cbBloom" transform="translate(445,135) scale(1.2)"/>
+        </svg>
+      </div>
+    </div>
+    <div style="position:absolute;top:-24px;right:-30px;width:min(42vw,470px);transform:scaleX(-1);transform-origin:top right;opacity:.92">
+      <div style="animation:branchSway 8.5s ease-in-out infinite;transform-origin:top left">
+        <svg viewBox="0 0 470 330" style="display:block;width:100%;height:auto;overflow:visible">
+          <path d="M-20 -20 C 70 25, 150 15, 205 65 S 320 145, 445 135" stroke="#1c0e15" stroke-width="9" stroke-linecap="round" fill="none"/>
+          <path d="M150 48 C 178 66, 196 108, 200 158" stroke="#1c0e15" stroke-width="6" stroke-linecap="round" fill="none"/>
+          <use href="#cbBloom" transform="translate(30,6) scale(1.1)"/>
+          <use href="#cbBloom" transform="translate(150,44) scale(1.05)"/>
+          <use href="#cbBloom" transform="translate(205,62) scale(1.24)"/>
+          <use href="#cbBloom" transform="translate(200,158) scale(.9)"/>
+          <use href="#cbBloom" transform="translate(300,110) scale(1.0)"/>
+          <use href="#cbBloom" transform="translate(120,30) scale(.66)"/>
+        </svg>
+      </div>
+    </div>
   </div>
   <div id="mxtei-ripples" aria-hidden="true" style="position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden"></div>
   <canvas id="mxtei-trail" aria-hidden="true" style="position:fixed;inset:0;z-index:60;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen"></canvas>
@@ -86,7 +132,7 @@ a:hover{color:var(--purple)}
 
     <nav style="position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 32px;backdrop-filter:blur(18px);background:color-mix(in srgb,var(--bg) 62%,transparent);border-bottom:1px solid var(--border)">
       <button onClick="{{ go.home }}" style="display:flex;align-items:center;gap:11px;background:none;border:none;cursor:pointer;padding:0">
-        <span style="width:34px;height:34px;border-radius:11px;background:var(--grad);display:grid;place-items:center;font:700 18px 'Space Grotesk';color:#fff;box-shadow:0 6px 22px -6px var(--glow-k)">m</span>
+        <span style="width:38px;height:38px;border-radius:10px;background:#0b0508;border:1px solid var(--border);display:grid;place-items:center;box-shadow:0 6px 22px -6px var(--glow-k)"><span style="font:400 30px 'UnifrakturMaguntia',serif;line-height:1;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;transform:translateY(1px)">m</span></span>
         <span style="display:inline-block;font:700 21px 'Space Grotesk';letter-spacing:-.02em;background:var(--grad);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gradFlow 14s ease-in-out infinite alternate">mxtei</span>
       </button>
       <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
@@ -125,7 +171,7 @@ a:hover{color:var(--purple)}
             <span style="width:8px;height:8px;border-radius:50%;background:#38e08a;box-shadow:0 0 12px #38e08a"></span> available for new projects
           </div>
           <h1 data-reveal style="font:700 clamp(42px,7vw,84px)/1.02 'Space Grotesk';letter-spacing:-.03em;margin:0 auto;max-width:15ch">
-            I build <span style="display:inline-block;position:relative;background:var(--grad);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:glitchA 4.4s steps(1) infinite, colorRoamA 9s ease-in-out infinite;will-change:transform,filter" style-after="content:'';position:absolute;inset:-2px;background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(190,215,255,.1) 5px 6px);mix-blend-mode:screen;pointer-events:none;animation:scanmove 1.6s linear infinite">software</span> & grow <span style="display:inline-block;position:relative;background:var(--grad);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:glitchB 5.3s steps(1) .8s infinite, colorRoamB 11.5s ease-in-out infinite;will-change:transform,filter" style-after="content:'';position:absolute;inset:-2px;background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(190,215,255,.1) 5px 6px);mix-blend-mode:screen;pointer-events:none;animation:scanmove 1.8s linear infinite">communities</span>.
+            I build <span style="display:inline-block;position:relative;background:var(--grad);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:glitchA 4.4s steps(1) infinite, colorRoamA 9s ease-in-out infinite;will-change:transform,filter" style-after="content:'';position:absolute;inset:-2px;background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(255,224,238,.12) 5px 6px);mix-blend-mode:screen;pointer-events:none;animation:scanmove 1.6s linear infinite">software</span> & grow <span style="display:inline-block;position:relative;background:var(--grad);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:glitchB 5.3s steps(1) .8s infinite, colorRoamB 11.5s ease-in-out infinite;will-change:transform,filter" style-after="content:'';position:absolute;inset:-2px;background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(255,224,238,.12) 5px 6px);mix-blend-mode:screen;pointer-events:none;animation:scanmove 1.8s linear infinite">communities</span>.
           </h1>
           <p data-reveal style="font-size:clamp(16px,2vw,20px);color:var(--muted);max-width:62ch;margin:26px auto 0;line-height:1.6">
             Hi, I'm Marcell Szoke — a website, app, game & Discord developer and community strategist. I script in Lua, JavaScript, Java & Python, and I've grown communities past a quarter-million members.
@@ -531,12 +577,11 @@ class Component extends DCLogic {
         const a=1-age/life;
         const mx=(p.x+pn.x)/2, my=(p.y+pn.y)/2;
         const pmx=(pp.x+p.x)/2, pmy=(pp.y+p.y)/2;
-        // mostly purple with a blue lean toward the leading edge
-        const bl=Math.round(150+ (1-a)*30);
-        ctx.strokeStyle=`rgba(${Math.round(120-a*20)},${Math.round(130+a*30)},255,0.95)`;
+        // sakura-pink ink, brightening toward the leading edge
+        ctx.strokeStyle=`rgba(255,${Math.round(88+a*70)},${Math.round(158+a*44)},0.95)`;
         ctx.globalAlpha=a;
         ctx.lineWidth=2.5+a*5.5;
-        ctx.shadowColor=`rgba(110,150,255,${a})`; ctx.shadowBlur=18*a+4;
+        ctx.shadowColor=`rgba(255,108,168,${a})`; ctx.shadowBlur=18*a+4;
         ctx.beginPath(); ctx.moveTo(pmx,pmy); ctx.quadraticCurveTo(p.x,p.y,mx,my); ctx.stroke();
       }
       ctx.globalAlpha=1;
@@ -546,20 +591,40 @@ class Component extends DCLogic {
     loop();
   }
 
-  // slow-moving constellation network — detailed, alive, blue/purple
+  // live cherry-blossom petals drifting down, swaying and tumbling
   initNet(){
     const c=document.getElementById('mxtei-net'); if(!c) return;
     const ctx=c.getContext('2d'); let w=0,h=0;
     const resize=()=>{ const dpr=Math.min(window.devicePixelRatio||1,2); w=c.clientWidth; h=c.clientHeight; c.width=w*dpr; c.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); };
     resize(); this._rs=resize; window.addEventListener('resize', resize);
-    const N=Math.max(40, Math.min(100, Math.round(w*h/15000)));
-    const pts=[]; for(let i=0;i<N;i++) pts.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*0.16,vy:(Math.random()-.5)*0.16,r:Math.random()*1.7+.6});
     const dark=()=>this.state.theme==='dark';
+    const palette=['#ffd6e6','#ffb3cf','#ff8fb8','#ff6aa6','#ffffff'];
+    const rnd=(a,b)=>a+Math.random()*(b-a);
+    const mk=(seeded)=>({
+      x:Math.random()*w, y:seeded?Math.random()*h:-rnd(20,h*0.4),
+      s:rnd(6,14), rot:rnd(0,Math.PI*2), vr:rnd(-0.022,0.022),
+      vy:rnd(0.32,0.95), sway:rnd(0.5,1.5), swayPh:rnd(0,Math.PI*2), swayAmp:rnd(10,34),
+      col:palette[Math.floor(Math.random()*palette.length)], a:rnd(.5,.92)
+    });
+    const N=Math.max(24, Math.min(64, Math.round(w*h/26000)));
+    const petals=Array.from({length:N},()=>mk(true));
+    const petal=(s)=>{ ctx.beginPath(); ctx.moveTo(0,-s); ctx.bezierCurveTo(s*0.92,-s*0.85, s*0.92,s*0.5, 0,s); ctx.bezierCurveTo(-s*0.92,s*0.5, -s*0.92,-s*0.85, 0,-s); ctx.closePath(); };
+    const t0=performance.now();
     const loop=()=>{
       ctx.clearRect(0,0,w,h);
-      for(const p of pts){ p.x+=p.vx; p.y+=p.vy; if(p.x<-20)p.x=w+20; if(p.x>w+20)p.x=-20; if(p.y<-20)p.y=h+20; if(p.y>h+20)p.y=-20; }
-      for(let i=0;i<pts.length;i++){ const a=pts[i]; for(let j=i+1;j<pts.length;j++){ const b=pts[j]; const dx=a.x-b.x, dy=a.y-b.y; const d=Math.hypot(dx,dy); if(d<128){ const o=(1-d/128)*(dark()?0.24:0.16); ctx.strokeStyle=`rgba(126,140,255,${o})`; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); } } }
-      for(const p of pts){ ctx.fillStyle=dark()?'rgba(150,175,255,.6)':'rgba(70,90,200,.5)'; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill(); }
+      const t=(performance.now()-t0)/1000;
+      for(const p of petals){
+        p.y+=p.vy; p.rot+=p.vr;
+        if(p.y-p.s>h){ Object.assign(p, mk(false)); }
+        const x=p.x+Math.sin(t*p.sway+p.swayPh)*p.swayAmp;
+        ctx.save();
+        ctx.translate(x,p.y); ctx.rotate(p.rot);
+        ctx.globalAlpha=p.a*(dark()?1:0.85);
+        ctx.fillStyle=p.col; ctx.shadowColor=p.col; ctx.shadowBlur=6;
+        petal(p.s); ctx.fill();
+        ctx.restore();
+      }
+      ctx.globalAlpha=1;
       this._af=requestAnimationFrame(loop);
     };
     loop();
@@ -677,17 +742,17 @@ class Component extends DCLogic {
     const paymethods = ['PayPal','Revolut','Crypto'];
 
     const portfolio = [
-      {type:'Website', emoji:'🌐', bg:'linear-gradient(120deg,#0ea5e9,#6d5cff,#38bdf8)', title:'Company website build', blurb:'A fast, modern marketing site for a growing company — responsive, animated and easy to manage.', price:'≈ $450', metric:'2 wk', metricLabel:'delivery', metric2:'100%', metricLabel2:'responsive'},
-      {type:'App', emoji:'📱', bg:'linear-gradient(120deg,#7c6cff,#3d8bff,#22d3ee)', title:'Custom web app', blurb:'A tailored app for a client with clean UX and solid engineering behind every screen.', price:'≈ $900', metric:'5k+', metricLabel:'users', metric2:'4.9★', metricLabel2:'user rating'},
-      {type:'Game', emoji:'🎮', bg:'linear-gradient(120deg,#3d8bff,#38bdf8,#7c6cff)', title:'Game & scripting project', blurb:'Gameplay systems and integrations scripted in Lua — mechanics, events and rewards.', price:'≈ $600', metric:'Lua', metricLabel:'+ more', metric2:'Live', metricLabel2:'events'},
-      {type:'Discord Bot', emoji:'🤖', bg:'linear-gradient(120deg,#6366f1,#3d8bff,#0ea5e9)', title:'All-in-one moderation suite', blurb:'Auto-mod, tickets, logging and an economy system for a 40k-member gaming server.', price:'≈ $180', metric:'40k', metricLabel:'members served', metric2:'-70%', metricLabel2:'mod workload'},
-      {type:'Growth', emoji:'🚀', bg:'linear-gradient(120deg,#5b4ee0,#22d3ee,#3d8bff)', title:'Community growth campaign', blurb:'Cross-platform growth strategy across Discord & Instagram from scratch.', price:'≈ $1.2k', metric:'120k', metricLabel:'new members'},
-      {type:'Server Setup', emoji:'🏗️', bg:'linear-gradient(120deg,#4f46e5,#0ea5e9,#7c6cff)', title:'Full server launch', blurb:'End-to-end build for a creator community — onboarding, roles, branding & bots.', price:'≈ $300', metric:'0→15k', metricLabel:'first quarter', metric2:'24h', metricLabel2:'to launch'},
-      {type:'Partnerships', emoji:'🤝', bg:'linear-gradient(120deg,#3d8bff,#7c6cff,#38bdf8)', title:'Partnership program', blurb:'Sourced and closed collaborations that cross-promoted to hundreds of thousands.', price:'Custom', metric:'12', metricLabel:'partners closed', metric2:'300k', metricLabel2:'combined reach'},
-      {type:'AI Feature', emoji:'🧠', bg:'linear-gradient(120deg,#7c6cff,#38bdf8,#5b4ee0)', title:'AI helper bot', blurb:'An AI-powered support assistant answering member questions instantly, 24/7.', price:'≈ $220', metric:'92%', metricLabel:'auto-resolved', metric2:'24/7', metricLabel2:'uptime'},
+      {type:'Website', emoji:'🌐', bg:'linear-gradient(120deg,#ff9dc6,#ff5c96,#ffd0e0)', title:'Company website build', blurb:'A fast, modern marketing site for a growing company — responsive, animated and easy to manage.', price:'≈ $450', metric:'2 wk', metricLabel:'delivery', metric2:'100%', metricLabel2:'responsive'},
+      {type:'App', emoji:'📱', bg:'linear-gradient(120deg,#ff6aa6,#ff2d7e,#ffb3cf)', title:'Custom web app', blurb:'A tailored app for a client with clean UX and solid engineering behind every screen.', price:'≈ $900', metric:'5k+', metricLabel:'users', metric2:'4.9★', metricLabel2:'user rating'},
+      {type:'Game', emoji:'🎮', bg:'linear-gradient(120deg,#ff8fb8,#ff4d8f,#ff6aa6)', title:'Game & scripting project', blurb:'Gameplay systems and integrations scripted in Lua — mechanics, events and rewards.', price:'≈ $600', metric:'Lua', metricLabel:'+ more', metric2:'Live', metricLabel2:'events'},
+      {type:'Discord Bot', emoji:'🤖', bg:'linear-gradient(120deg,#ff5c96,#ff86b8,#ff2d7e)', title:'All-in-one moderation suite', blurb:'Auto-mod, tickets, logging and an economy system for a 40k-member gaming server.', price:'≈ $180', metric:'40k', metricLabel:'members served', metric2:'-70%', metricLabel2:'mod workload'},
+      {type:'Growth', emoji:'🚀', bg:'linear-gradient(120deg,#ffb3cf,#ff5c96,#e01e66)', title:'Community growth campaign', blurb:'Cross-platform growth strategy across Discord & Instagram from scratch.', price:'≈ $1.2k', metric:'120k', metricLabel:'new members'},
+      {type:'Server Setup', emoji:'🏗️', bg:'linear-gradient(120deg,#ff6aa6,#ffd0e0,#ff4d8f)', title:'Full server launch', blurb:'End-to-end build for a creator community — onboarding, roles, branding & bots.', price:'≈ $300', metric:'0→15k', metricLabel:'first quarter', metric2:'24h', metricLabel2:'to launch'},
+      {type:'Partnerships', emoji:'🤝', bg:'linear-gradient(120deg,#ff4d8f,#ff9dc6,#ff2d7e)', title:'Partnership program', blurb:'Sourced and closed collaborations that cross-promoted to hundreds of thousands.', price:'Custom', metric:'12', metricLabel:'partners closed', metric2:'300k', metricLabel2:'combined reach'},
+      {type:'AI Feature', emoji:'🧠', bg:'linear-gradient(120deg,#ff8fb8,#ffffff,#ff5c96)', title:'AI helper bot', blurb:'An AI-powered support assistant answering member questions instantly, 24/7.', price:'≈ $220', metric:'92%', metricLabel:'auto-resolved', metric2:'24/7', metricLabel2:'uptime'},
     ].map(w=>({ ...w, hasM2: w.metric2!=null }));
 
-    const av = ['linear-gradient(135deg,#7c6cff,#3d8bff)','linear-gradient(135deg,#3d8bff,#38bdf8)','linear-gradient(135deg,#5b4ee0,#22d3ee)','linear-gradient(135deg,#6366f1,#0ea5e9)','linear-gradient(135deg,#8b5cf6,#3d8bff)','linear-gradient(135deg,#0ea5e9,#7c6cff)'];
+    const av = ['linear-gradient(135deg,#ff8fb8,#ff5c96)','linear-gradient(135deg,#ff6aa6,#ff2d7e)','linear-gradient(135deg,#ffb3cf,#ff4d8f)','linear-gradient(135deg,#ff5c96,#e01e66)','linear-gradient(135deg,#ff9dc6,#ff6aa6)','linear-gradient(135deg,#ff4d8f,#ffb3cf)'];
     const st5='★★★★★', st4='★★★★☆';
     const testimonialsRaw = [
       {name:'Marton S.', role:'Private Business Owner', s:5, text:'Marcell set up my discord server and grew the audience exactly how i wanted. worth every penny — got precisely what i asked for.'},
