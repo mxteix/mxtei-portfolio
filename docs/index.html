@@ -71,6 +71,12 @@ a:hover{color:var(--purple)}
 @keyframes iconFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-9px) rotate(7deg)}}
 @keyframes branchSway{0%,100%{transform:rotate(-1deg)}50%{transform:rotate(1.6deg)}}
 @keyframes bloomPulse{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
+.cb-neon{position:absolute;pointer-events:none;opacity:.42;filter:drop-shadow(0 0 5px #ff2bb0) drop-shadow(0 0 13px rgba(255,60,190,.55))}
+.cb-neon svg{display:block;width:100%;height:auto}
+@keyframes cbDrift1{from{transform:translate(0,0) rotate(0deg)}to{transform:translate(22vw,15vh) rotate(150deg)}}
+@keyframes cbDrift2{from{transform:translate(0,0) rotate(0deg)}to{transform:translate(-19vw,20vh) rotate(-170deg)}}
+@keyframes cbDrift3{from{transform:translate(0,0) rotate(0deg)}to{transform:translate(17vw,-18vh) rotate(130deg)}}
+@keyframes cbDrift4{from{transform:translate(0,0) rotate(0deg)}to{transform:translate(-15vw,-13vh) rotate(-110deg)}}
 ::selection{background:var(--pink);color:#fff}
 </style>
 </helmet>
@@ -92,38 +98,40 @@ a:hover{color:var(--purple)}
         <ellipse cx="0" cy="-11" rx="7.5" ry="11" fill="url(#cbPetal)" transform="rotate(288)"/>
         <circle r="3.4" fill="#ff2d7f"/><circle r="1.2" cx="2" cy="-2" fill="#fff2a8"/>
       </g>
+      <g id="cbBranch">
+        <path d="M-22 -18 C 66 24, 134 16, 196 60 S 306 132, 404 128 452 132 474 150" stroke="#1c0e15" stroke-width="10" stroke-linecap="round" fill="none"/>
+        <path d="M-22 -18 C 66 24, 134 16, 196 60 S 300 128, 392 126" stroke="#2b1622" stroke-width="5" stroke-linecap="round" fill="none" opacity=".75"/>
+        <path d="M120 32 C 150 52, 168 96, 172 152" stroke="#1c0e15" stroke-width="6" stroke-linecap="round" fill="none"/>
+        <path d="M250 92 C 282 104, 310 140, 320 196" stroke="#1c0e15" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M196 60 C 214 42, 240 32, 270 28" stroke="#1c0e15" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M300 118 C 330 116, 356 96, 374 72" stroke="#1c0e15" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <g stroke="#1c0e15" stroke-width="2.5" fill="none"><path d="M270 28 l 9 -8"/><path d="M374 72 l 8 -10"/><path d="M172 152 l -8 9"/></g>
+        <circle cx="280" cy="19" r="4" fill="#ff8fb8"/><circle cx="383" cy="61" r="4" fill="#ff8fb8"/><circle cx="163" cy="162" r="3.6" fill="#ffb3cf"/>
+        <use href="#cbBloom" transform="translate(22,4) scale(1.12)"/>
+        <use href="#cbBloom" transform="translate(96,24) scale(.72)"/>
+        <use href="#cbBloom" transform="translate(196,58) scale(1.24)"/>
+        <use href="#cbBloom" transform="translate(172,152) scale(.94)"/>
+        <use href="#cbBloom" transform="translate(270,28) scale(.9)"/>
+        <use href="#cbBloom" transform="translate(320,196) scale(.86)"/>
+        <use href="#cbBloom" transform="translate(404,128) scale(1.16)"/>
+        <use href="#cbBloom" transform="translate(300,118) scale(.7)"/>
+        <use href="#cbBloom" transform="translate(60,12) scale(.6)"/>
+      </g>
     </defs></svg>
-    <div style="position:absolute;top:-24px;left:-30px;width:min(42vw,470px);transform-origin:top left;opacity:.92">
-      <div style="animation:branchSway 7s ease-in-out infinite;transform-origin:top left">
-        <svg viewBox="0 0 470 330" style="display:block;width:100%;height:auto;overflow:visible">
-          <path d="M-20 -20 C 70 25, 150 15, 205 65 S 320 145, 445 135" stroke="#1c0e15" stroke-width="9" stroke-linecap="round" fill="none"/>
-          <path d="M150 48 C 178 66, 196 108, 200 158" stroke="#1c0e15" stroke-width="6" stroke-linecap="round" fill="none"/>
-          <path d="M300 112 C 332 124, 360 158, 372 212" stroke="#1c0e15" stroke-width="5" stroke-linecap="round" fill="none"/>
-          <use href="#cbBloom" transform="translate(30,6) scale(1.15)"/>
-          <use href="#cbBloom" transform="translate(96,26) scale(.72)"/>
-          <use href="#cbBloom" transform="translate(150,44) scale(1.02)"/>
-          <use href="#cbBloom" transform="translate(205,62) scale(1.28)"/>
-          <use href="#cbBloom" transform="translate(200,158) scale(.92)"/>
-          <use href="#cbBloom" transform="translate(300,110) scale(.8)"/>
-          <use href="#cbBloom" transform="translate(372,212) scale(.88)"/>
-          <use href="#cbBloom" transform="translate(445,135) scale(1.2)"/>
-        </svg>
-      </div>
+    <div aria-hidden="true" style="position:absolute;inset:0;mix-blend-mode:screen">
+      <div class="cb-neon" style="left:7%;top:26%;width:96px;animation:cbDrift1 54s ease-in-out infinite alternate"><svg viewBox="0 0 100 100" fill="none" stroke="#ff4dd2" stroke-width="3"><circle cx="50" cy="50" r="44"/></svg></div>
+      <div class="cb-neon" style="left:80%;top:14%;width:74px;animation:cbDrift2 64s ease-in-out infinite alternate"><svg viewBox="0 0 100 100" fill="none" stroke="#ff2bb0" stroke-width="3.4"><rect x="12" y="12" width="76" height="76" rx="8"/></svg></div>
+      <div class="cb-neon" style="left:67%;top:60%;width:86px;animation:cbDrift3 58s ease-in-out infinite alternate"><svg viewBox="0 0 100 100" fill="none" stroke="#ff5cc8" stroke-width="3.2"><polygon points="50,10 90,86 10,86"/></svg></div>
+      <div class="cb-neon" style="left:22%;top:72%;width:56px;animation:cbDrift4 48s ease-in-out infinite alternate"><svg viewBox="0 0 100 100" fill="none" stroke="#ff2bb0" stroke-width="4"><circle cx="50" cy="50" r="42"/></svg></div>
+      <div class="cb-neon" style="left:48%;top:34%;width:60px;animation:cbDrift2 70s ease-in-out infinite alternate"><svg viewBox="0 0 100 100" fill="none" stroke="#ff4dd2" stroke-width="4" stroke-linecap="round"><path d="M50 16 V84 M16 50 H84"/></svg></div>
+      <div class="cb-neon" style="left:37%;top:83%;width:120px;opacity:.3;filter:blur(2px) drop-shadow(0 0 16px #ff2bb0);animation:cbDrift1 76s ease-in-out infinite alternate"><svg viewBox="0 0 100 100" fill="none" stroke="#ff6ad0" stroke-width="2.4"><circle cx="50" cy="50" r="46"/></svg></div>
     </div>
-    <div style="position:absolute;top:-24px;right:-30px;width:min(42vw,470px);transform:scaleX(-1);transform-origin:top right;opacity:.92">
-      <div style="animation:branchSway 8.5s ease-in-out infinite;transform-origin:top left">
-        <svg viewBox="0 0 470 330" style="display:block;width:100%;height:auto;overflow:visible">
-          <path d="M-20 -20 C 70 25, 150 15, 205 65 S 320 145, 445 135" stroke="#1c0e15" stroke-width="9" stroke-linecap="round" fill="none"/>
-          <path d="M150 48 C 178 66, 196 108, 200 158" stroke="#1c0e15" stroke-width="6" stroke-linecap="round" fill="none"/>
-          <use href="#cbBloom" transform="translate(30,6) scale(1.1)"/>
-          <use href="#cbBloom" transform="translate(150,44) scale(1.05)"/>
-          <use href="#cbBloom" transform="translate(205,62) scale(1.24)"/>
-          <use href="#cbBloom" transform="translate(200,158) scale(.9)"/>
-          <use href="#cbBloom" transform="translate(300,110) scale(1.0)"/>
-          <use href="#cbBloom" transform="translate(120,30) scale(.66)"/>
-        </svg>
-      </div>
-    </div>
+    <div style="position:absolute;top:-24px;left:-32px;width:min(42vw,468px);transform-origin:top left;opacity:.94"><div style="animation:branchSway 7s ease-in-out infinite;transform-origin:top left"><svg viewBox="0 0 470 330" style="display:block;width:100%;height:auto;overflow:visible"><use href="#cbBranch"/></svg></div></div>
+    <div style="position:absolute;top:-24px;right:-32px;width:min(42vw,468px);transform:scaleX(-1);transform-origin:top right;opacity:.94"><div style="animation:branchSway 8.5s ease-in-out infinite;transform-origin:top left"><svg viewBox="0 0 470 330" style="display:block;width:100%;height:auto;overflow:visible"><use href="#cbBranch"/></svg></div></div>
+    <div style="position:absolute;bottom:-24px;left:-32px;width:min(40vw,440px);transform:scaleY(-1);transform-origin:bottom left;opacity:.9"><div style="animation:branchSway 9.5s ease-in-out infinite;transform-origin:top left"><svg viewBox="0 0 470 330" style="display:block;width:100%;height:auto;overflow:visible"><use href="#cbBranch"/></svg></div></div>
+    <div style="position:absolute;bottom:-24px;right:-32px;width:min(40vw,440px);transform:scale(-1,-1);transform-origin:bottom right;opacity:.9"><div style="animation:branchSway 8s ease-in-out infinite;transform-origin:top left"><svg viewBox="0 0 470 330" style="display:block;width:100%;height:auto;overflow:visible"><use href="#cbBranch"/></svg></div></div>
+    <div style="position:absolute;top:42%;left:-70px;width:min(26vw,300px);transform:rotate(30deg);transform-origin:top left;opacity:.8"><div style="animation:branchSway 11s ease-in-out infinite;transform-origin:top left"><svg viewBox="0 0 470 330" style="display:block;width:100%;height:auto;overflow:visible"><use href="#cbBranch"/></svg></div></div>
+    <div style="position:absolute;top:50%;right:-70px;width:min(26vw,300px);transform:scaleX(-1) rotate(30deg);transform-origin:top right;opacity:.8"><div style="animation:branchSway 12s ease-in-out infinite;transform-origin:top left"><svg viewBox="0 0 470 330" style="display:block;width:100%;height:auto;overflow:visible"><use href="#cbBranch"/></svg></div></div>
   </div>
   <div id="mxtei-ripples" aria-hidden="true" style="position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden"></div>
   <canvas id="mxtei-trail" aria-hidden="true" style="position:fixed;inset:0;z-index:60;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen"></canvas>
