@@ -121,7 +121,7 @@ h1, h1 *, h2, h2 *{font-family:'Grenze Gotisch','UnifrakturMaguntia',serif !impo
   <div id="mxtei-ripples" aria-hidden="true" style="position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden"></div>
   <canvas id="mxtei-trail" aria-hidden="true" style="position:fixed;inset:0;z-index:60;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen"></canvas>
 
-  <div style="position:relative;z-index:2">
+  <div id="cb-content" style="position:relative;z-index:2">
 
     <nav style="position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 32px;backdrop-filter:blur(18px);background:color-mix(in srgb,var(--bg) 62%,transparent);border-bottom:1px solid var(--border)">
       <button onClick="{{ go.home }}" style="display:flex;align-items:center;gap:11px;background:none;border:none;cursor:pointer;padding:0">
@@ -543,7 +543,7 @@ class Component extends DCLogic {
     this._rot = setInterval(()=>{ if(this._paused) return; this.setState(s=>({pidx:(s.pidx+1)%this.platforms().length})); }, 3800);
     this.setupReveals();
     this.setupSectionSpy();
-    this.playIntro();
+    try{ this.playIntro(); }catch(e){ const cc=document.getElementById('cb-content'); if(cc)cc.style.opacity='1'; const ci=document.getElementById('cb-intro'); if(ci)ci.style.display='none'; }
   }
   componentDidUpdate(pp, ps){ if(ps && ps.view !== this.state.view){ if(this.state.view!=='main') window.scrollTo(0,0); this.setupReveals(); this.setupSectionSpy(); } }
   componentWillUnmount(){
@@ -563,21 +563,32 @@ class Component extends DCLogic {
 
   // fade the cherry-blossom intro overlay out on first load
   playIntro(){
-    const el=document.getElementById('cb-intro'); if(!el) return;
+    const el=document.getElementById('cb-intro'), content=document.getElementById('cb-content'); if(!el) return;
     const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(reduce){ el.style.display='none'; return; }
+    if(reduce){ el.style.display='none'; if(content) content.style.opacity='1'; return; }
     const vw=window.innerWidth||document.documentElement.clientWidth||1280, vh=window.innerHeight||document.documentElement.clientHeight||800;
-    const cell=Math.max(40,Math.round(vw/40));
+    const cell=Math.max(20,Math.round(vw/66));
     const cols=Math.ceil(vw/cell)+1, rows=Math.ceil(vh/cell)+1;
-    el.style.display='grid'; el.style.gridTemplateColumns='repeat('+cols+',1fr)'; el.style.gridTemplateRows='repeat('+rows+',1fr)'; el.style.background='#07060d'; el.innerHTML='';
-    const cx=(cols-1)/2, cy=(rows-1)/2, maxD=Math.hypot(cx,cy)||1, cells=[];
-    const shades=['#07060d','#140a16','#2a0f1e','#4a1330','#ff5c96','#ffd2e2'];
-    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){ const d=document.createElement('div');
-      const t=Math.random(); d.style.background = t<0.55?shades[(Math.random()*3)|0] : (t<0.86?shades[3+((Math.random()*2)|0)] : shades[5]);
-      d.style.willChange='opacity,transform'; el.appendChild(d); cells.push({d,dist:Math.hypot(c-cx,r-cy)}); }
-    cells.forEach(o=>{ const delay=520+(o.dist/maxD)*950+Math.random()*140;
-      try{ o.d.animate([{opacity:1,transform:'scale(1)'},{opacity:1,transform:'scale(1)',offset:.55},{opacity:0,transform:'scale(.12) rotate(16deg)'}],{duration:560,delay,easing:'cubic-bezier(.5,0,.4,1)',fill:'forwards'}); }catch(e){ o.d.style.opacity='0'; } });
-    setTimeout(()=>{ el.style.display='none'; el.innerHTML=''; }, 2350);
+    // rasterise the gothic "m" to the grid resolution -> logo mask
+    const mc=document.createElement('canvas'); mc.width=cols; mc.height=rows; const mg=mc.getContext('2d');
+    mg.fillStyle='#000'; mg.fillRect(0,0,cols,rows); mg.fillStyle='#fff'; mg.textAlign='center'; mg.textBaseline='middle';
+    mg.font='700 '+Math.floor(rows*0.72)+"px 'UnifrakturMaguntia','Grenze Gotisch',serif";
+    mg.fillText('m', cols/2, rows*0.53);
+    const mask=mg.getImageData(0,0,cols,rows).data;
+    el.style.display='grid'; el.style.gridTemplateColumns='repeat('+cols+',1fr)'; el.style.gridTemplateRows='repeat('+rows+',1fr)'; el.style.background='transparent'; el.innerHTML='';
+    const cx=(cols-1)/2, cy=(rows-1)/2, maxD=Math.hypot(cx,cy)||1, dark=['#08060e','#120814','#241021','#07060d'], cells=[];
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){ const isLogo=mask[(r*cols+c)*4]>110;
+      const d=document.createElement('div'); d.style.willChange='opacity,transform';
+      if(isLogo){ const t=Math.random(); d.style.background=t<0.5?'#ff6aa6':(t<0.8?'#ffd2e2':'#ffffff'); }
+      else d.style.background=dark[(Math.random()*dark.length)|0];
+      el.appendChild(d); cells.push({d,isLogo,dist:Math.hypot(c-cx,r-cy)}); }
+    cells.forEach(o=>{ if(o.isLogo){
+        try{ o.d.animate([{opacity:0,transform:'scale(.25)'},{opacity:1,transform:'scale(1)',offset:.16},{opacity:1,offset:.74},{opacity:0,transform:'scale(1.7)'}],{duration:2500,delay:280+Math.random()*220,easing:'ease',fill:'forwards'}); }catch(e){ o.d.style.opacity='0'; }
+      } else { const delay=300+(o.dist/maxD)*640+Math.random()*150;
+        try{ o.d.animate([{opacity:1},{opacity:1,offset:.15},{opacity:0,transform:'scale(.1)'}],{duration:600,delay,easing:'cubic-bezier(.5,0,.4,1)',fill:'forwards'}); }catch(e){ o.d.style.opacity='0'; } } });
+    if(content) content.style.opacity='0';
+    setTimeout(()=>{ if(content){ try{ content.animate([{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'none'}],{duration:1000,easing:'ease-out',fill:'forwards'}); }catch(e){} content.style.opacity='1'; } }, 2650);
+    setTimeout(()=>{ el.style.display='none'; el.innerHTML=''; }, 3400);
   }
   // quick pink-white light sweep on navigation
   playTransition(){
@@ -618,6 +629,17 @@ class Component extends DCLogic {
 
     function softTex(){ const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'); const rg=g.createRadialGradient(32,32,0,32,32,32); rg.addColorStop(0,'rgba(255,255,255,1)'); rg.addColorStop(.5,'rgba(255,255,255,.55)'); rg.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=rg; g.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); }
     const soft=softTex();
+    function blossomTex(){ const c=document.createElement('canvas'); c.width=c.height=72; const g=c.getContext('2d'); g.translate(36,36);
+      for(let i=0;i<5;i++){ g.rotate(Math.PI*2/5); const pg=g.createRadialGradient(0,-15,1,0,-15,15); pg.addColorStop(0,'rgba(255,255,255,.96)'); pg.addColorStop(.5,'rgba(255,192,216,.95)'); pg.addColorStop(1,'rgba(255,120,168,.12)'); g.fillStyle=pg; g.beginPath(); g.ellipse(0,-15,8.5,13,0,0,7); g.fill(); }
+      const cg=g.createRadialGradient(0,0,0,0,0,5); cg.addColorStop(0,'rgba(255,225,130,.95)'); cg.addColorStop(1,'rgba(255,150,120,.2)'); g.fillStyle=cg; g.beginPath(); g.arc(0,0,4,0,7); g.fill();
+      return new THREE.CanvasTexture(c); }
+    function petalTex(){ const c=document.createElement('canvas'); c.width=c.height=48; const g=c.getContext('2d'); g.translate(24,24);
+      const pg=g.createLinearGradient(0,-18,0,18); pg.addColorStop(0,'rgba(255,255,255,.96)'); pg.addColorStop(.55,'rgba(255,182,210,.95)'); pg.addColorStop(1,'rgba(255,120,170,.75)');
+      g.fillStyle=pg; g.beginPath(); g.moveTo(0,-18); g.bezierCurveTo(14,-9,12,15,0,18); g.bezierCurveTo(-12,15,-14,-9,0,-18); g.fill();
+      g.strokeStyle='rgba(255,110,160,.45)'; g.lineWidth=1; g.beginPath(); g.moveTo(0,-13); g.lineTo(0,13); g.stroke();
+      g.globalCompositeOperation='destination-out'; g.beginPath(); g.moveTo(0,19); g.lineTo(-4,12); g.lineTo(4,12); g.closePath(); g.fill();
+      return new THREE.CanvasTexture(c); }
+    const bloomMap=blossomTex(), petalMap=petalTex();
 
     // night-sky gradient backdrop
     const sky=document.createElement('canvas'); sky.width=8; sky.height=256; const skc=sky.getContext('2d');
@@ -642,23 +664,33 @@ class Component extends DCLogic {
     const tree=new THREE.Group(); scene.add(tree);
     const bark=new THREE.MeshStandardMaterial({color:0x2c1b24,roughness:.92,metalness:0});
     const tips=[]; let branches=0;
+    const cylTmp=new THREE.Vector3(0,1,0);
+    function branchCyl(a,b,rBot,rTop){ const len=a.distanceTo(b)||0.01; const geo=new THREE.CylinderGeometry(Math.max(rTop,0.03),Math.max(rBot,0.03),len,7,1);
+      const m=new THREE.Mesh(geo,bark); m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(cylTmp,b.clone().sub(a).normalize()); tree.add(m); }
     function addBranch(start,dir,len,rad,depth){
-      if(branches>640) return; branches++;
-      const end=start.clone().add(dir.clone().multiplyScalar(len));
-      const geo=new THREE.CylinderGeometry(Math.max(rad*0.76,0.03),rad,len,8,1);
-      const m=new THREE.Mesh(geo,bark);
-      m.position.copy(start).add(end).multiplyScalar(0.5);
-      m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize());
-      tree.add(m);
+      if(branches>900) return; branches++;
+      dir=dir.clone().normalize();
+      // curved branch (two segments, gentle bend + slight upward reach) — organic, not straight
+      const perp=new THREE.Vector3(-dir.z,0,dir.x).normalize();
+      const bend=(Math.random()-0.5)*0.6;
+      const mid=start.clone().add(dir.clone().multiplyScalar(len*0.5)).add(perp.clone().multiplyScalar(len*bend*0.16)).add(new THREE.Vector3(0,len*0.05,0));
+      const end=mid.clone().add(dir.clone().multiplyScalar(len*0.5)).add(new THREE.Vector3(0,len*0.03,0));
+      branchCyl(start,mid,rad,rad*0.86); branchCyl(mid,end,rad*0.86,rad*0.72);
       if(depth<=0){ tips.push(end.clone()); return; }
-      const kids=depth>3?3:2;
+      const kids=depth>4?3:2;
+      const up=dir.clone();
+      const ref=Math.abs(up.y)<0.9?new THREE.Vector3(0,1,0):new THREE.Vector3(1,0,0);
+      const side=new THREE.Vector3().crossVectors(up,ref).normalize();
+      const fwd=new THREE.Vector3().crossVectors(up,side).normalize();
       for(let i=0;i<kids;i++){
-        const nd=dir.clone(); const ax=new THREE.Vector3(Math.random()-.5,Math.random()*0.22,Math.random()-.5).normalize();
-        nd.applyAxisAngle(ax,0.42+Math.random()*0.5); nd.y=Math.max(nd.y,0.14); nd.normalize();
-        addBranch(end,nd,len*(0.74+Math.random()*0.1),rad*0.72,depth-1);
+        const azim=(i/kids)*Math.PI*2 + (Math.random()-0.5)*0.8;
+        const tilt=0.40+Math.random()*0.32;
+        const outw=side.clone().multiplyScalar(Math.cos(azim)).add(fwd.clone().multiplyScalar(Math.sin(azim)));
+        const nd=up.clone().multiplyScalar(Math.cos(tilt)).add(outw.multiplyScalar(Math.sin(tilt))).normalize();
+        addBranch(end,nd,len*(0.72+Math.random()*0.1),rad*0.70,depth-1);
       }
     }
-    addBranch(new THREE.Vector3(0,0.2,0),new THREE.Vector3(0,1,0),7.0,1.15,5);
+    addBranch(new THREE.Vector3(0,0.3,0),new THREE.Vector3(0,1,0),6.6,1.3,6);
     // gnarled roots splaying from the base into the snow
     (function(){ const R=8; for(let i=0;i<R;i++){ const ang=(i/R)*Math.PI*2+Math.random()*0.4;
       let start=new THREE.Vector3(Math.cos(ang)*0.55,0.55,Math.sin(ang)*0.55);
@@ -674,15 +706,18 @@ class Component extends DCLogic {
       function vn(x,y){ const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
         const a=hash(xi,yi),b=hash(xi+1,yi),c=hash(xi,yi+1),d=hash(xi+1,yi+1);
         return a*(1-u)*(1-v)+b*u*(1-v)+c*(1-u)*v+d*u*v; }
-      function fbm(x,y){ let t=0,amp=0.55,f=1; for(let i=0;i<5;i++){ t+=amp*vn(x*f,y*f); f*=2.03; amp*=0.5; } return t; }
+      function fbm(x,y){ let t=0,amp=0.55,f=1; for(let i=0;i<6;i++){ t+=amp*vn(x*f,y*f); f*=2.04; amp*=0.5; } return t; }
+      function ridge(x,y){ let r=1-Math.abs(fbm(x,y)*2-1); return r*r; }
       const size=620, seg=240;
       const geo=new THREE.PlaneGeometry(size,size,seg,seg); geo.rotateX(-Math.PI/2);
       const pos=geo.attributes.position, col=new Float32Array(pos.count*3);
       for(let i=0;i<pos.count;i++){ const x=pos.getX(i), z=pos.getZ(i), dist=Math.sqrt(x*x+z*z);
         const far=Math.min(1,Math.max(0,(dist-52)/72));
         let h=Math.max(0, fbm(x*0.011+40, z*0.011+70)-0.40);
-        let elev=Math.pow(h,1.2)*140*far*far;                  // snowy peaks ringing the valley
-        elev += (fbm(x*0.03+3,z*0.03+9)-0.5)*1.5*(1-far);       // gentle roll near tree
+        let elev=Math.pow(h,1.22)*128*far*far;                 // snowy peaks ringing the valley
+        elev += ridge(x*0.02+11,z*0.02+5)*30*far*far;          // sharp crest lines
+        elev += (fbm(x*0.06+7,z*0.06+2)-0.5)*3.4*far;          // rocky surface detail
+        elev += (fbm(x*0.03+3,z*0.03+9)-0.5)*1.5*(1-far);      // gentle roll near tree
         pos.setY(i, elev-0.2);
         const snowLine=19+(hash(Math.floor(x*0.2),Math.floor(z*0.2))-0.5)*11;
         const snow=Math.min(1,Math.max(0,(elev-snowLine)/24));
@@ -707,7 +742,7 @@ class Component extends DCLogic {
       for(let i=0;i<fill;i++){ const u=Math.random(),a=Math.random()*6.283,b=Math.acos(2*Math.random()-1), rr=Math.cbrt(u);
         put(cx+Math.sin(b)*Math.cos(a)*rr*(rx+1.7), cy+Math.cos(b)*rr*(ry+1.3)+0.7, cz+Math.sin(b)*Math.sin(a)*rr*(rz+1.7)); }
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(p.subarray(0,k*3),3)); g.setAttribute('color',new THREE.BufferAttribute(col.subarray(0,k*3),3));
-      tree.add(new THREE.Points(g,new THREE.PointsMaterial({size:1.15,map:soft,vertexColors:true,transparent:true,depthWrite:false,opacity:.95,sizeAttenuation:true})));
+      tree.add(new THREE.Points(g,new THREE.PointsMaterial({size:1.7,map:bloomMap,vertexColors:true,transparent:true,depthWrite:false,opacity:.98,sizeAttenuation:true,alphaTest:0.02})));
     })();
 
     // snow
@@ -716,11 +751,11 @@ class Component extends DCLogic {
     const snG=new THREE.BufferGeometry(); snG.setAttribute('position',new THREE.BufferAttribute(snP,3));
     scene.add(new THREE.Points(snG,new THREE.PointsMaterial({color:0xffffff,size:0.3,map:soft,transparent:true,depthWrite:false,opacity:.9,sizeAttenuation:true})));
 
-    // pink petals (fewer)
-    const petN=130,ptP=new Float32Array(petN*3),ptV=[];
-    for(let i=0;i<petN;i++){ ptP[i*3]=(Math.random()-.5)*66; ptP[i*3+1]=Math.random()*46; ptP[i*3+2]=(Math.random()-.5)*48-2; ptV.push(0.5+Math.random()*1.2); }
+    // a few detailed petals drifting down slowly
+    const petN=42,ptP=new Float32Array(petN*3),ptV=[];
+    for(let i=0;i<petN;i++){ ptP[i*3]=(Math.random()-.5)*54; ptP[i*3+1]=Math.random()*44; ptP[i*3+2]=(Math.random()-.5)*40-2; ptV.push(0.22+Math.random()*0.4); }
     const ptG=new THREE.BufferGeometry(); ptG.setAttribute('position',new THREE.BufferAttribute(ptP,3));
-    scene.add(new THREE.Points(ptG,new THREE.PointsMaterial({color:0xff9dc6,size:0.55,map:soft,transparent:true,depthWrite:false,opacity:.92,sizeAttenuation:true})));
+    scene.add(new THREE.Points(ptG,new THREE.PointsMaterial({size:1.15,map:petalMap,transparent:true,depthWrite:false,opacity:.92,sizeAttenuation:true,alphaTest:0.02})));
 
     // rotation: one full turn each time a section is fully reached
     const secOrder=['home','about','services','work','reviews','custom','contact'];
@@ -735,11 +770,11 @@ class Component extends DCLogic {
     const frame=()=>{
       this._raf3d=requestAnimationFrame(frame);
       const dt=Math.min(clock.getDelta(),0.05);
-      const tgt=this._treeTarget;
-      this._treeCur += (tgt-this._treeCur)*Math.min(1,dt*1.7);
-      tree.rotation.y=this._treeCur;
+      this._treeCur += (this._treeTarget-this._treeCur)*Math.min(1,dt*1.7);
+      this._spin=(this._spin||0)+dt*0.075;            // gentle constant rotation
+      tree.rotation.y=this._spin+this._treeCur;
       const a=snG.attributes.position.array; for(let i=0;i<snowN;i++){ a[i*3+1]-=snV[i]*dt*3.2; a[i*3]+=Math.sin(performance.now()*0.00022+i)*0.009; if(a[i*3+1]<-3) a[i*3+1]=56; } snG.attributes.position.needsUpdate=true;
-      const b=ptG.attributes.position.array; for(let i=0;i<petN;i++){ b[i*3+1]-=ptV[i]*dt*6; b[i*3]+=Math.sin(performance.now()*0.0006+i)*0.02; if(b[i*3+1]<-3) b[i*3+1]=44; } ptG.attributes.position.needsUpdate=true;
+      const b=ptG.attributes.position.array; for(let i=0;i<petN;i++){ b[i*3+1]-=ptV[i]*dt*2.6; b[i*3]+=Math.sin(performance.now()*0.0004+i)*0.016; if(b[i*3+1]<-3){ b[i*3+1]=44; b[i*3]=(Math.random()-.5)*54; } } ptG.attributes.position.needsUpdate=true;
       const ip=Math.min(1,(performance.now()-this._introStart)/this._introDur);
       if(ip<1){ const e=1-Math.pow(1-ip,3); camera.position.lerpVectors(camStart,camRest,e); }
       else { camera.position.x += ((camRest.x+mouse.x*5)-camera.position.x)*0.03; camera.position.y += ((camRest.y-mouse.y*3)-camera.position.y)*0.03; camera.position.z += (camRest.z-camera.position.z)*0.03; }
@@ -756,28 +791,21 @@ class Component extends DCLogic {
     const ctx=c.getContext('2d'); let w=0,h=0;
     const resize=()=>{ const dpr=Math.min(window.devicePixelRatio||1,2); w=c.clientWidth; h=c.clientHeight; c.width=w*dpr; c.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); };
     resize(); this._trs=resize; window.addEventListener('resize', resize);
-    const pts=[]; const life=850;
-    this._tm=(e)=>{ pts.push({x:e.clientX,y:e.clientY,t:performance.now()}); if(pts.length>140) pts.shift(); };
+    const pts=[]; const life=600;
+    this._tm=(e)=>{ pts.push({x:e.clientX,y:e.clientY,t:performance.now()}); if(pts.length>120) pts.shift(); };
     window.addEventListener('mousemove', this._tm);
     const loop=()=>{
       ctx.clearRect(0,0,w,h);
       const now=performance.now();
-      ctx.lineCap='round'; ctx.lineJoin='round';
-      for(let i=1;i<pts.length-1;i++){
-        const p=pts[i], pn=pts[i+1], pp=pts[i-1];
-        const age=now-p.t; if(age>life) continue;
-        const a=1-age/life;
-        const mx=(p.x+pn.x)/2, my=(p.y+pn.y)/2;
-        const pmx=(pp.x+p.x)/2, pmy=(pp.y+p.y)/2;
-        // sakura-pink ink, brightening toward the leading edge
-        ctx.strokeStyle=`rgba(255,${Math.round(88+a*70)},${Math.round(158+a*44)},0.95)`;
-        ctx.globalAlpha=a;
-        ctx.lineWidth=2.5+a*5.5;
-        ctx.shadowColor=`rgba(255,108,168,${a})`; ctx.shadowBlur=18*a+4;
-        ctx.beginPath(); ctx.moveTo(pmx,pmy); ctx.quadraticCurveTo(p.x,p.y,mx,my); ctx.stroke();
-      }
-      ctx.globalAlpha=1;
       while(pts.length && now-pts[0].t>life) pts.shift();
+      if(pts.length>2){
+        // one continuous, soft translucent whitish-pink curve following the cursor
+        ctx.lineCap='round'; ctx.lineJoin='round';
+        ctx.strokeStyle='rgba(255,224,237,0.5)'; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+        for(let i=1;i<pts.length-1;i++){ const mx=(pts[i].x+pts[i+1].x)/2, my=(pts[i].y+pts[i+1].y)/2; ctx.quadraticCurveTo(pts[i].x,pts[i].y,mx,my); }
+        ctx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y); ctx.stroke();
+      }
       this._taf=requestAnimationFrame(loop);
     };
     loop();
