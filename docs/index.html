@@ -205,7 +205,7 @@ a:hover{color:var(--purple)}
             I build <span style="display:inline-block;position:relative;background:var(--grad);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:glitchA 4.4s steps(1) infinite, colorRoamA 9s ease-in-out infinite;will-change:transform,filter" style-after="content:'';position:absolute;inset:-2px;background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(255,224,238,.12) 5px 6px);mix-blend-mode:screen;pointer-events:none;animation:scanmove 1.6s linear infinite">software</span> & grow <span style="display:inline-block;position:relative;background:var(--grad);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:glitchB 5.3s steps(1) .8s infinite, colorRoamB 11.5s ease-in-out infinite;will-change:transform,filter" style-after="content:'';position:absolute;inset:-2px;background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(255,224,238,.12) 5px 6px);mix-blend-mode:screen;pointer-events:none;animation:scanmove 1.8s linear infinite">communities</span>.
           </h1>
           <p data-reveal style="font-size:clamp(16px,2vw,20px);color:var(--muted);max-width:62ch;margin:26px auto 0;line-height:1.6">
-            Hi, I'm Marcell Szoke — a website, app, game & Discord developer and community strategist. I script in Lua, JavaScript, Java & Python, and I've grown communities past a quarter-million members.
+            Hi, I'm Marcell Szoke — a website, app, game & Discord developer and community strategist. I script in Lua, JavaScript & Python, and I've grown communities past a quarter-million members.
           </p>
           <div data-reveal style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:36px">
             <button onClick="{{ go.services }}" style="background:var(--grad);color:#fff;border:none;padding:15px 30px;border-radius:13px;font:600 16px 'Space Grotesk';cursor:pointer;box-shadow:0 12px 34px -10px var(--glow-k);transition:transform .2s" style-hover="transform:translateY(-3px)">View services & pricing</button>
@@ -295,7 +295,7 @@ a:hover{color:var(--purple)}
             <div style="font:500 13px 'JetBrains Mono';color:var(--pink);text-transform:uppercase;letter-spacing:.14em;margin-bottom:14px">About</div>
             <h1 style="font:700 clamp(34px,5vw,56px)/1.05 'Space Grotesk';letter-spacing:-.03em;margin:0 0 22px">Marcell Szoke.<br>Building software &<br>growing communities.</h1>
             <p style="color:var(--muted);font-size:17px;line-height:1.7;margin:0 0 16px">I'm a website, app, game and Discord developer with 3+ years building for companies and individuals — and turning quiet servers into thriving communities. I write clean, reliable code and I know what actually makes people stay, engage, and invite their friends.</p>
-            <p style="color:var(--muted);font-size:17px;line-height:1.7;margin:0 0 16px">My work spans four languages — <strong style="color:var(--text)">Lua, JavaScript, Java & Python</strong> — across websites, apps, games and Discord, plus hands-on growth and partnership strategy on Discord and Instagram. I've helped gain 250k+ followers and closed 30+ partnerships.</p>
+            <p style="color:var(--muted);font-size:17px;line-height:1.7;margin:0 0 16px">My work spans three languages — <strong style="color:var(--text)">Lua, JavaScript & Python</strong> — across websites, apps, games and Discord, plus hands-on growth and partnership strategy on Discord and Instagram. I've helped gain 250k+ followers and closed 30+ partnerships.</p>
             <p style="color:var(--muted);font-size:17px;line-height:1.7;margin:0">If you want it done once, done right, and explained clearly — that's what I do.</p>
           </div>
           <div data-reveal style="position:sticky;top:96px">
@@ -313,7 +313,7 @@ a:hover{color:var(--purple)}
         </div>
 
         <h2 style="font:700 26px 'Space Grotesk';margin:64px 0 22px" data-reveal>The stack I script in</h2>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
           <sc-for list="{{ skills }}" as="sk" hint-placeholder-count="4">
             <div data-reveal style="padding:22px;border-radius:18px;border:1px solid var(--border);background:var(--surface)">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font:600 17px 'Space Grotesk'">{{ sk.name }}</span><span style="font:500 13px 'JetBrains Mono';color:var(--pink)">{{ sk.lvl }}</span></div>
@@ -725,7 +725,7 @@ class Component extends DCLogic {
     const capabilities = [
       {icon:'🌐', title:'Websites & apps', desc:'Fast, modern websites and apps for companies and individuals — polished, responsive and reliable.'},
       {icon:'🎮', title:'Games & integrations', desc:'Games and game systems scripted in Lua and more — mechanics, events and live features.'},
-      {icon:'🤖', title:'Custom Discord bots', desc:'Moderation, tickets, economy, giveaways, automation — clean code in JS, Python, Java or Lua.'},
+      {icon:'🤖', title:'Custom Discord bots', desc:'Moderation, tickets, economy, giveaways, automation — clean code in JS, Python or Lua.'},
       {icon:'📈', title:'Community growth', desc:'Strategies that took servers and pages past 250k members. Real engagement, not empty numbers.'},
       {icon:'🤝', title:'Partnerships & outreach', desc:'30+ partnerships closed. I find the right partners and pitch you in a way that lands.'},
       {icon:'🧠', title:'AI features', desc:'Smart, AI-powered features and workflows that make your product or community feel next-level.'},
@@ -734,7 +734,6 @@ class Component extends DCLogic {
       {name:'JavaScript', lvl:'Expert', pct:'94%'},
       {name:'Python', lvl:'Expert', pct:'90%'},
       {name:'Lua', lvl:'Advanced', pct:'85%'},
-      {name:'Java', lvl:'Advanced', pct:'80%'},
     ];
     const process = [
       {step:'01', title:'Discovery', desc:"We talk through goals, scope and budget. No jargon, no fluff."},
