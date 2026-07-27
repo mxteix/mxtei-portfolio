@@ -567,7 +567,7 @@ class Component extends DCLogic {
     const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if(reduce){ el.style.display='none'; if(content) content.style.opacity='1'; return; }
     const vw=window.innerWidth||document.documentElement.clientWidth||1280, vh=window.innerHeight||document.documentElement.clientHeight||800;
-    const cell=Math.max(9,Math.round(vw/118));           // small pixels => highly detailed
+    const cell=Math.max(9,Math.round(vw/118));
     const cols=Math.ceil(vw/cell)+1, rows=Math.ceil(vh/cell)+1;
     // rasterise the gothic "m" at grid resolution -> logo mask
     const mc=document.createElement('canvas'); mc.width=cols; mc.height=rows; const mg=mc.getContext('2d');
@@ -575,67 +575,66 @@ class Component extends DCLogic {
     mg.font='400 '+Math.floor(rows*0.66)+"px 'UnifrakturMaguntia','Grenze Gotisch',serif";
     mg.fillText('m', cols/2, rows*0.54);
     const md=mg.getImageData(0,0,cols,rows).data;
-    const isL=(c,r)=> c>=0&&r>=0&&c<cols&&r<rows && md[(r*cols+c)*4]>215;   // high cut => slim strokes
-    el.style.display='grid'; el.style.gridTemplateColumns='repeat('+cols+',1fr)'; el.style.gridTemplateRows='repeat('+rows+',1fr)'; el.style.background='#07060d'; el.innerHTML='';
-    const cx=(cols-1)/2, cy=(rows-1)/2, maxD=Math.hypot(cx,cy)||1, cells=[];
-    const pinks=['#ff6aa6','#ffd2e2','#ff2d7e','#ffffff'], blacks=['#07060d','#0d0912','#140b16'];
+    const isL=(c,r)=> c>=0&&r>=0&&c<cols&&r<rows && md[(r*cols+c)*4]>215;
+    el.style.display='grid'; el.style.gridTemplateColumns='repeat('+cols+',1fr)'; el.style.gridTemplateRows='repeat('+rows+',1fr)';
+    el.style.backgroundColor='#07060d'; el.innerHTML='';
+    const cx=(cols-1)/2, cy=(rows-1)/2, maxD=Math.hypot(cx,cy)||1;
+    const noise=['#07060d','#0d0912','#160c19','#ff6aa6','#ff2d7e','#ffd2e2'];
+    const logoCells=[], fadeCells=[];
     for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
       const logo=isL(c,r);
       let outline=false;
       if(!logo){ for(let dr=-1;dr<=1&&!outline;dr++) for(let dc=-1;dc<=1;dc++){ if(isL(c+dc,r+dr)){ outline=true; break; } } }
       const d=document.createElement('div'); d.style.willChange='opacity,transform';
-      // start: black + pink noise across the whole screen
-      d.style.background = Math.random()<0.42 ? pinks[(Math.random()*pinks.length)|0] : blacks[(Math.random()*blacks.length)|0];
+      // FINAL colour assigned once — never swapped mid-flight (that was the glitchy pop)
+      if(logo)        d.style.backgroundColor = Math.random()<0.5?'#ff6aa6':(Math.random()<0.6?'#ffd2e2':'#ffffff');
+      else if(outline)d.style.backgroundColor = '#000000';
+      else            d.style.backgroundColor = noise[(Math.random()*noise.length)|0];
       el.appendChild(d);
-      cells.push({d,logo,outline,dx:(c-cx)/maxD,dy:(r-cy)/maxD,dist:Math.hypot(c-cx,r-cy)});
+      const nd=Math.hypot(c-cx,r-cy)/maxD;
+      const o={d,nd,dx:(c-cx)||(Math.random()-0.5),dy:(r-cy)||(Math.random()-0.5)};
+      if(logo||outline) logoCells.push(o); else fadeCells.push(o);
     }
-    const FORM=760, BURST=1450;    // form the M fast, then detonate
-    cells.forEach(o=>{
-      const nd=o.dist/maxD;
-      if(o.logo){
-        // settle into a bright pink/white logo pixel
-        const col=Math.random()<0.5?'#ff6aa6':(Math.random()<0.6?'#ffd2e2':'#ffffff');
-        try{ o.d.animate([{opacity:0.85,transform:'scale(1)'},{opacity:1,transform:'scale(1)'}],{duration:FORM*0.7,delay:120+nd*160,easing:'ease-out',fill:'forwards'}); }catch(e){}
-        setTimeout(()=>{ o.d.style.background=col; }, 120+nd*160);
-      } else if(o.outline){
-        // crisp black outline so the M reads clearly
-        setTimeout(()=>{ o.d.style.background='#000000'; }, 120+nd*160);
-        try{ o.d.animate([{opacity:1},{opacity:1}],{duration:FORM,fill:'forwards'}); }catch(e){}
-      } else {
-        // everything else dissolves away, revealing the logo
-        try{ o.d.animate([{opacity:1},{opacity:0,transform:'scale(.15)'}],{duration:420,delay:80+nd*430,easing:'cubic-bezier(.5,0,.4,1)',fill:'forwards'}); }catch(e){ o.d.style.opacity='0'; }
-      }
-    });
-    // blast the logo + outline outward at BURST
-    setTimeout(()=>{ el.style.background='transparent';
-      cells.forEach(o=>{ if(!o.logo && !o.outline) return;
-        const ang=Math.atan2(o.dy,o.dx)+(Math.random()-0.5)*0.5, pow=(300+Math.random()*620);
-        try{ o.d.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translate('+Math.cos(ang)*pow+'px,'+Math.sin(ang)*pow+'px) scale(.2) rotate('+((Math.random()-.5)*540)+'deg)'}],{duration:720,easing:'cubic-bezier(.15,.7,.3,1)',fill:'forwards'}); }catch(e){ o.d.style.opacity='0'; } });
+    const DISSOLVE=820, HOLD=380, BURST=DISSOLVE+HOLD;   // smooth, sequential phases
+    // phase 1 — the surrounding noise dissolves inward-out in a smooth radial wave, revealing the M
+    fadeCells.forEach(o=>{ try{ o.d.animate([{opacity:1},{opacity:0}],
+      {duration:420,delay:(1-o.nd)*DISSOLVE*0.72,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'}); }catch(e){ o.d.style.opacity='0'; } });
+    // phase 2 — the logo settles, then swells slightly just before it goes
+    logoCells.forEach(o=>{ try{ o.d.animate([{transform:'scale(1)'},{transform:'scale(1)',offset:.62},{transform:'scale(1.06)'}],
+      {duration:BURST,easing:'ease-in-out',fill:'forwards'}); }catch(e){} });
+    // phase 3 — one coherent radial blast outward (direction is purely radial, power grows with radius)
+    setTimeout(()=>{
+      const len=Math.hypot(1,1);
+      logoCells.forEach(o=>{ const m=Math.hypot(o.dx,o.dy)||1, ux=o.dx/m, uy=o.dy/m;
+        const pow=300+o.nd*520+Math.random()*90;
+        try{ o.d.animate([{opacity:1,transform:'scale(1.06)'},{opacity:0,transform:'translate('+(ux*pow)+'px,'+(uy*pow)+'px) scale(.35) rotate('+((Math.random()-.5)*260)+'deg)'}],
+          {duration:640,easing:'cubic-bezier(.22,.65,.3,1)',fill:'forwards'}); }catch(e){ o.d.style.opacity='0'; } });
+      try{ el.animate([{backgroundColor:'rgba(7,6,13,1)'},{backgroundColor:'rgba(7,6,13,0)'}],{duration:520,easing:'ease-out',fill:'forwards'}); }catch(e){ el.style.backgroundColor='transparent'; }
     }, BURST);
-    // cherry-blossom petal explosion
+    // cherry-blossom petal burst, fired with the blast
     setTimeout(()=>{
       const burst=document.createElement('div');
       burst.style.cssText='position:fixed;inset:0;z-index:121;pointer-events:none;overflow:hidden';
       document.body.appendChild(burst);
       const flash=document.createElement('div');
-      flash.style.cssText='position:absolute;left:50%;top:50%;width:38vmax;height:38vmax;transform:translate(-50%,-50%) scale(.2);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,150,200,.55) 38%,rgba(255,90,160,0) 70%)';
+      flash.style.cssText='position:absolute;left:50%;top:50%;width:40vmax;height:40vmax;transform:translate(-50%,-50%) scale(.2);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,150,200,.5) 38%,rgba(255,90,160,0) 70%)';
       burst.appendChild(flash);
-      try{ flash.animate([{opacity:.95,transform:'translate(-50%,-50%) scale(.15)'},{opacity:0,transform:'translate(-50%,-50%) scale(1.5)'}],{duration:680,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}); }catch(e){}
-      const cols2=['#ffffff','#ffd2e2','#ff9dc6','#ff6aa6','#ff2d7e'];
+      try{ flash.animate([{opacity:.9,transform:'translate(-50%,-50%) scale(.15)'},{opacity:0,transform:'translate(-50%,-50%) scale(1.45)'}],{duration:620,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}); }catch(e){}
+      const pal=['#ffffff','#ffd2e2','#ff9dc6','#ff6aa6','#ff2d7e'];
       for(let i=0;i<120;i++){ const p=document.createElement('div');
-        const sz=7+Math.random()*13, c1=cols2[(Math.random()*cols2.length)|0];
-        p.style.cssText='position:absolute;left:50%;top:50%;width:'+sz+'px;height:'+(sz*1.25)+'px;background:'+c1+';border-radius:60% 60% 55% 55%/70% 70% 40% 40%;opacity:.95;will-change:transform,opacity;box-shadow:0 0 8px rgba(255,140,190,.5)';
+        const sz=7+Math.random()*13;
+        p.style.cssText='position:absolute;left:50%;top:50%;width:'+sz+'px;height:'+(sz*1.25)+'px;background:'+pal[(Math.random()*pal.length)|0]+';border-radius:60% 60% 55% 55%/70% 70% 40% 40%;opacity:.95;will-change:transform,opacity;box-shadow:0 0 8px rgba(255,140,190,.45)';
         burst.appendChild(p);
-        const ang=Math.random()*6.283, dist=200+Math.random()*780, dur=850+Math.random()*700;
+        const ang=Math.random()*6.283, dist=220+Math.random()*760, dur=820+Math.random()*680;
         try{ p.animate([{transform:'translate(-50%,-50%) scale(.4) rotate(0deg)',opacity:1},
-                        {transform:'translate(calc(-50% + '+Math.cos(ang)*dist+'px), calc(-50% + '+(Math.sin(ang)*dist+120+Math.random()*180)+'px)) scale(1) rotate('+((Math.random()-.5)*900)+'deg)',opacity:0}],
-                       {duration:dur,easing:'cubic-bezier(.1,.65,.3,1)',fill:'forwards'}); }catch(e){}
+                        {transform:'translate(calc(-50% + '+Math.cos(ang)*dist+'px), calc(-50% + '+(Math.sin(ang)*dist+110+Math.random()*170)+'px)) scale(1) rotate('+((Math.random()-.5)*820)+'deg)',opacity:0}],
+                       {duration:dur,easing:'cubic-bezier(.12,.62,.3,1)',fill:'forwards'}); }catch(e){}
       }
-      setTimeout(()=>burst.remove(), 1700);
+      setTimeout(()=>burst.remove(), 1650);
     }, BURST);
     if(content) content.style.opacity='0';
-    setTimeout(()=>{ if(content){ try{ content.animate([{opacity:0,transform:'scale(1.02)'},{opacity:1,transform:'none'}],{duration:760,easing:'ease-out',fill:'forwards'}); }catch(e){} content.style.opacity='1'; } }, BURST+120);
-    setTimeout(()=>{ el.style.display='none'; el.innerHTML=''; }, BURST+820);
+    setTimeout(()=>{ if(content){ try{ content.animate([{opacity:0,transform:'scale(1.015)'},{opacity:1,transform:'none'}],{duration:700,easing:'ease-out',fill:'forwards'}); }catch(e){} content.style.opacity='1'; } }, BURST+90);
+    setTimeout(()=>{ el.style.display='none'; el.innerHTML=''; }, BURST+760);
   }
   // quick pink-white light sweep on navigation
   playTransition(){
