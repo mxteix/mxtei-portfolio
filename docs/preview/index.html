@@ -567,17 +567,17 @@ class Component extends DCLogic {
     const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if(reduce){ el.style.display='none'; if(content) content.style.opacity='1'; return; }
     const vw=window.innerWidth||document.documentElement.clientWidth||1280, vh=window.innerHeight||document.documentElement.clientHeight||800;
-    const cell=Math.max(20,Math.round(vw/66));
+    const cell=Math.max(12,Math.round(vw/92));
     const cols=Math.ceil(vw/cell)+1, rows=Math.ceil(vh/cell)+1;
-    // rasterise the gothic "m" to the grid resolution -> logo mask
+    // rasterise the gothic "m" to the grid resolution -> logo mask (slimmer via a higher threshold)
     const mc=document.createElement('canvas'); mc.width=cols; mc.height=rows; const mg=mc.getContext('2d');
     mg.fillStyle='#000'; mg.fillRect(0,0,cols,rows); mg.fillStyle='#fff'; mg.textAlign='center'; mg.textBaseline='middle';
-    mg.font='700 '+Math.floor(rows*0.72)+"px 'UnifrakturMaguntia','Grenze Gotisch',serif";
-    mg.fillText('m', cols/2, rows*0.53);
+    mg.font='400 '+Math.floor(rows*0.66)+"px 'UnifrakturMaguntia','Grenze Gotisch',serif";
+    mg.fillText('m', cols/2, rows*0.54);
     const mask=mg.getImageData(0,0,cols,rows).data;
     el.style.display='grid'; el.style.gridTemplateColumns='repeat('+cols+',1fr)'; el.style.gridTemplateRows='repeat('+rows+',1fr)'; el.style.background='transparent'; el.innerHTML='';
     const cx=(cols-1)/2, cy=(rows-1)/2, maxD=Math.hypot(cx,cy)||1, dark=['#08060e','#120814','#241021','#07060d'], cells=[];
-    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){ const isLogo=mask[(r*cols+c)*4]>110;
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){ const isLogo=mask[(r*cols+c)*4]>165;
       const d=document.createElement('div'); d.style.willChange='opacity,transform';
       if(isLogo){ const t=Math.random(); d.style.background=t<0.5?'#ff6aa6':(t<0.8?'#ffd2e2':'#ffffff'); }
       else d.style.background=dark[(Math.random()*dark.length)|0];
@@ -662,11 +662,21 @@ class Component extends DCLogic {
 
     // ---- procedural cherry tree ----
     const tree=new THREE.Group(); scene.add(tree);
-    const bark=new THREE.MeshStandardMaterial({color:0x2c1b24,roughness:.92,metalness:0});
+    function barkTex(){ const c=document.createElement('canvas'); c.width=128; c.height=256; const g=c.getContext('2d');
+      g.fillStyle='#2b1a22'; g.fillRect(0,0,128,256);
+      for(let i=0;i<80;i++){ let x=Math.random()*128; const wdt=1+Math.random()*3, sh=Math.random()<.5; g.strokeStyle='rgba('+(sh?'18,11,15':'74,54,60')+','+(0.2+Math.random()*0.4).toFixed(2)+')'; g.lineWidth=wdt; g.beginPath(); g.moveTo(x,0); for(let y=0;y<=256;y+=14){ x+=(Math.random()-.5)*7; g.lineTo(x,y); } g.stroke(); }
+      for(let i=0;i<5;i++){ const x=Math.random()*128,y=Math.random()*256; g.strokeStyle='rgba(12,7,11,.55)'; g.lineWidth=1.5; g.beginPath(); g.ellipse(x,y,4+Math.random()*5,7+Math.random()*8,Math.random(),0,7); g.stroke(); }
+      for(let i=0;i<12;i++){ g.strokeStyle='rgba(130,102,108,.4)'; g.lineWidth=1; const x=Math.random()*128,y=Math.random()*256,len=8+Math.random()*24,an=(Math.random()-.5)*0.8; g.beginPath(); g.moveTo(x,y); g.lineTo(x+Math.cos(an)*len,y+Math.sin(an)*len); g.stroke(); }
+      const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(2,2); return t; }
+    const barkMap=barkTex();
+    const bark=new THREE.MeshStandardMaterial({map:barkMap,bumpMap:barkMap,bumpScale:0.05,color:0x8f6d75,roughness:.95,metalness:0});
     const tips=[]; let branches=0;
-    const cylTmp=new THREE.Vector3(0,1,0);
-    function branchCyl(a,b,rBot,rTop){ const len=a.distanceTo(b)||0.01; const geo=new THREE.CylinderGeometry(Math.max(rTop,0.03),Math.max(rBot,0.03),len,7,1);
-      const m=new THREE.Mesh(geo,bark); m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(cylTmp,b.clone().sub(a).normalize()); tree.add(m); }
+    const cylTmp=new THREE.Vector3(0,1,0); const branchGeoms=[]; const _mtx=new THREE.Matrix4(),_q=new THREE.Quaternion(),_p=new THREE.Vector3(),_s=new THREE.Vector3(1,1,1);
+    function branchCyl(a,b,rBot,rTop){ const len=a.distanceTo(b)||0.01; const geo=new THREE.CylinderGeometry(Math.max(rTop,0.03),Math.max(rBot,0.03),len,6,1);
+      _q.setFromUnitVectors(cylTmp,b.clone().sub(a).normalize()); _p.copy(a).add(b).multiplyScalar(0.5); _mtx.compose(_p,_q,_s); geo.applyMatrix4(_mtx); branchGeoms.push(geo); }
+    function mergeGeoms(list){ let vc=0; list.forEach(g=>vc+=g.attributes.position.count); const pos=new Float32Array(vc*3),nor=new Float32Array(vc*3),uv=new Float32Array(vc*2),idx=[]; let vo=0;
+      list.forEach(g=>{ pos.set(g.attributes.position.array,vo*3); nor.set(g.attributes.normal.array,vo*3); uv.set(g.attributes.uv.array,vo*2); const gi=g.index.array,cnt=g.attributes.position.count; for(let k=0;k<gi.length;k++) idx.push(gi[k]+vo); vo+=cnt; g.dispose(); });
+      const bg=new THREE.BufferGeometry(); bg.setAttribute('position',new THREE.BufferAttribute(pos,3)); bg.setAttribute('normal',new THREE.BufferAttribute(nor,3)); bg.setAttribute('uv',new THREE.BufferAttribute(uv,2)); bg.setIndex(idx); return bg; }
     function addBranch(start,dir,len,rad,depth){
       if(branches>900) return; branches++;
       dir=dir.clone().normalize();
@@ -691,15 +701,34 @@ class Component extends DCLogic {
       }
     }
     addBranch(new THREE.Vector3(0,0.3,0),new THREE.Vector3(0,1,0),6.6,1.3,6);
-    // gnarled roots splaying from the base into the snow
-    (function(){ const R=8; for(let i=0;i<R;i++){ const ang=(i/R)*Math.PI*2+Math.random()*0.4;
-      let start=new THREE.Vector3(Math.cos(ang)*0.55,0.55,Math.sin(ang)*0.55);
-      let d=new THREE.Vector3(Math.cos(ang),-0.5-Math.random()*0.3,Math.sin(ang)).normalize();
-      let len=1.8+Math.random()*0.9, rad=0.66;
-      for(let s=0;s<3;s++){ const end=start.clone().add(d.clone().multiplyScalar(len));
-        const g=new THREE.CylinderGeometry(Math.max(rad*0.62,0.04),rad,len,7); const m=new THREE.Mesh(g,bark);
-        m.position.copy(start).add(end).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()); tree.add(m);
-        start=end; d=d.clone(); d.y-=0.5; d.x*=1.15; d.z*=1.15; d.normalize(); len*=0.68; rad*=0.6; } } })();
+    // roots dive from the base then spread out along the ground so the tree isn't floating
+    (function(){ const R=13; for(let i=0;i<R;i++){ const ang=(i/R)*Math.PI*2+(Math.random()-.5)*0.5; const jx=(Math.random()-.5)*0.6, jz=(Math.random()-.5)*0.6;
+      let pos=new THREE.Vector3(Math.cos(ang)*0.85,0.7,Math.sin(ang)*0.85);
+      let dir=new THREE.Vector3(Math.cos(ang)+jx,-0.75,Math.sin(ang)+jz).normalize();
+      let rad=0.48+Math.random()*0.2, len=2.3+Math.random()*1.0; const segs=4+((Math.random()*3)|0);
+      for(let s=0;s<segs;s++){ const end=pos.clone().add(dir.clone().multiplyScalar(len)); if(end.y<0.03) end.y=0.02+Math.random()*0.04;
+        branchCyl(pos,end,rad,rad*0.72); pos=end;
+        dir=new THREE.Vector3(Math.cos(ang)+jx*1.5+(Math.random()-.5)*0.3,-0.07,Math.sin(ang)+jz*1.5+(Math.random()-.5)*0.3).normalize();
+        len*=0.86; rad*=0.66; }
+    } })();
+    // merge all trunk/branch/root cylinders into one mesh (keeps draw calls low for clones)
+    tree.add(new THREE.Mesh(mergeGeoms(branchGeoms), bark));
+    // a little white snow owl resting in a hollow on the trunk
+    (function(){ const oy=3.5, oz=1.02;
+      const hole=new THREE.Mesh(new THREE.SphereGeometry(0.66,18,14), new THREE.MeshBasicMaterial({color:0x05040a})); hole.scale.set(1.15,1.4,0.55); hole.position.set(0,oy,oz*0.48); tree.add(hole);
+      const owl=new THREE.Group(); owl.position.set(0,oy,oz);
+      const white=new THREE.MeshStandardMaterial({color:0xeef2ff,roughness:.95});
+      const body=new THREE.Mesh(new THREE.SphereGeometry(0.4,18,16),white); body.scale.set(1,1.3,0.95); owl.add(body);
+      const head=new THREE.Mesh(new THREE.SphereGeometry(0.3,18,16),white); head.position.set(0,0.42,0.02); owl.add(head);
+      const tuftG=new THREE.ConeGeometry(0.08,0.22,6);
+      const tl=new THREE.Mesh(tuftG,white); tl.position.set(-0.15,0.66,0.02); tl.rotation.z=0.35; owl.add(tl);
+      const tr=new THREE.Mesh(tuftG,white); tr.position.set(0.15,0.66,0.02); tr.rotation.z=-0.35; owl.add(tr);
+      const eyeMat=new THREE.MeshStandardMaterial({color:0xffcf6b,emissive:0x4a2e00,emissiveIntensity:0.5,roughness:.5}), pupMat=new THREE.MeshBasicMaterial({color:0x0a0608});
+      [-0.12,0.12].forEach(ex=>{ const e=new THREE.Mesh(new THREE.SphereGeometry(0.1,12,10),eyeMat); e.position.set(ex,0.44,0.24); owl.add(e);
+        const p=new THREE.Mesh(new THREE.SphereGeometry(0.05,8,8),pupMat); p.position.set(ex,0.44,0.32); owl.add(p); });
+      const beak=new THREE.Mesh(new THREE.ConeGeometry(0.05,0.13,6),new THREE.MeshStandardMaterial({color:0xffa94d})); beak.position.set(0,0.34,0.3); beak.rotation.x=Math.PI/2; owl.add(beak);
+      tree.add(owl);
+    })();
     // ground + distant snow-capped mountains (fbm-displaced terrain)
     (function(){
       function hash(x,y){ const h=Math.sin(x*127.1+y*311.7)*43758.5453; return h-Math.floor(h); }
@@ -744,6 +773,9 @@ class Component extends DCLogic {
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(p.subarray(0,k*3),3)); g.setAttribute('color',new THREE.BufferAttribute(col.subarray(0,k*3),3));
       tree.add(new THREE.Points(g,new THREE.PointsMaterial({size:1.7,map:bloomMap,vertexColors:true,transparent:true,depthWrite:false,opacity:.98,sizeAttenuation:true,alphaTest:0.02})));
     })();
+    // smaller companion trees — only the constant slow rotation (not tied to nav)
+    const smallTrees=[];
+    [[-28,-9,0.5],[28,-15,0.42],[-44,-28,0.32]].forEach(sp=>{ const t=tree.clone(true); t.scale.setScalar(sp[2]); t.position.set(sp[0],0,sp[1]); t.rotation.y=Math.random()*6.28; scene.add(t); smallTrees.push(t); });
 
     // snow
     const snowN=1250,snP=new Float32Array(snowN*3),snV=[];
@@ -773,6 +805,7 @@ class Component extends DCLogic {
       this._treeCur += (this._treeTarget-this._treeCur)*Math.min(1,dt*1.7);
       this._spin=(this._spin||0)+dt*0.075;            // gentle constant rotation
       tree.rotation.y=this._spin+this._treeCur;
+      for(let i=0;i<smallTrees.length;i++) smallTrees[i].rotation.y += dt*0.075*(0.85+i*0.12);
       const a=snG.attributes.position.array; for(let i=0;i<snowN;i++){ a[i*3+1]-=snV[i]*dt*3.2; a[i*3]+=Math.sin(performance.now()*0.00022+i)*0.009; if(a[i*3+1]<-3) a[i*3+1]=56; } snG.attributes.position.needsUpdate=true;
       const b=ptG.attributes.position.array; for(let i=0;i<petN;i++){ b[i*3+1]-=ptV[i]*dt*2.6; b[i*3]+=Math.sin(performance.now()*0.0004+i)*0.016; if(b[i*3+1]<-3){ b[i*3+1]=44; b[i*3]=(Math.random()-.5)*54; } } ptG.attributes.position.needsUpdate=true;
       const ip=Math.min(1,(performance.now()-this._introStart)/this._introDur);
