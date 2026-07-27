@@ -764,7 +764,7 @@ class Component extends DCLogic {
       list.forEach(g=>{ pos.set(g.attributes.position.array,vo*3); nor.set(g.attributes.normal.array,vo*3); uv.set(g.attributes.uv.array,vo*2); const gi=g.index.array,cnt=g.attributes.position.count; for(let k=0;k<gi.length;k++) idx.push(gi[k]+vo); vo+=cnt; g.dispose(); });
       const bg=new THREE.BufferGeometry(); bg.setAttribute('position',new THREE.BufferAttribute(pos,3)); bg.setAttribute('normal',new THREE.BufferAttribute(nor,3)); bg.setAttribute('uv',new THREE.BufferAttribute(uv,2)); bg.setIndex(idx); return bg; }
     function addBranch(start,dir,len,rad,depth){
-      if(branches>(MOB?420:900)) return; branches++;
+      if(branches>900) return; branches++;
       dir=dir.clone().normalize();
       // curved branch (two segments, gentle bend + slight upward reach) — organic, not straight
       const perp=new THREE.Vector3(-dir.z,0,dir.x).normalize();
@@ -786,7 +786,7 @@ class Component extends DCLogic {
         addBranch(end,nd,len*(0.72+Math.random()*0.1),rad*0.70,depth-1);
       }
     }
-    addBranch(new THREE.Vector3(0,0.3,0),new THREE.Vector3(0,1,0),6.6,1.3,MOB?5:6);
+    addBranch(new THREE.Vector3(0,0.3,0),new THREE.Vector3(0,1,0),6.6,1.3,6);
     // buttress roots flaring from the trunk and sinking into the island surface
     (function(){ const R=9, MAXR=4.6; for(let i=0;i<R;i++){ const ang=(i/R)*Math.PI*2+(Math.random()-.5)*0.35;
       const ux=Math.cos(ang), uz=Math.sin(ang);
@@ -869,7 +869,7 @@ class Component extends DCLogic {
       let cx=0,cy=0,cz=0; tips.forEach(t=>{cx+=t.x;cy+=t.y;cz+=t.z;}); const n=tips.length||1; cx/=n;cy/=n;cz/=n;
       let rx=1,ry=1,rz=1; tips.forEach(t=>{ rx=Math.max(rx,Math.abs(t.x-cx)); ry=Math.max(ry,Math.abs(t.y-cy)); rz=Math.max(rz,Math.abs(t.z-cz)); });
       const pal=[[1,.70,.82],[1,.60,.75],[1,.48,.67],[1,.82,.9],[1,.90,.94]];
-      const perTip=MOB?12:20, fill=MOB?3000:7000, cnt=tips.length*perTip+fill;
+      const perTip=20, fill=7000, cnt=tips.length*perTip+fill;
       const p=new Float32Array(cnt*3), col=new Float32Array(cnt*3); let k=0;
       const put=(x,y,z)=>{ const c=pal[(Math.random()*pal.length)|0]; p[k*3]=x;p[k*3+1]=y;p[k*3+2]=z; col[k*3]=c[0];col[k*3+1]=c[1];col[k*3+2]=c[2]; k++; };
       tips.forEach(tp=>{ for(let i=0;i<perTip;i++){ const r=0.8+Math.random()*1.4,a=Math.random()*6.283,b=Math.acos(2*Math.random()-1);
