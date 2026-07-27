@@ -100,6 +100,31 @@ a:hover{color:var(--purple)}
 ::selection{background:var(--pink);color:#fff}
 /* readable gothic display for large headings; body stays clean */
 h1, h1 *, h2, h2 *{font-family:'Grenze Gotisch','UnifrakturMaguntia',serif !important;letter-spacing:.006em !important;}
+/* ---- mobile: collapse the inline multi-column layouts to a single readable column ---- */
+@media (max-width:760px){
+  /* the browser serialises inline styles with spaces, so match both forms */
+  [style*="repeat(2, 1fr)"],[style*="repeat(2,1fr)"],
+  [style*="repeat(3, 1fr)"],[style*="repeat(3,1fr)"],
+  [style*="repeat(4, 1fr)"],[style*="repeat(4,1fr)"],
+  [style*="1.05fr"],[style*="1.1fr"],[style*="1.3fr"],
+  [style*="220px 1fr"]{ grid-template-columns:1fr !important; }
+  [style*="columns: 3"],[style*="columns:3"],
+  [style*="columns: 2"],[style*="columns:2"]{ columns:1 !important; }
+  /* stacked side panels shouldn't stick (nav keeps its sticky top:0) */
+  [style*="top: 96px"],[style*="top:96px"]{ position:static !important; }
+  main{ padding:0 16px !important; }
+  nav{ padding:12px 14px !important; gap:10px !important; }
+  section,[style*="padding:44px"]{ padding-left:18px !important; padding-right:18px !important; }
+  [style*="border-radius:26px"],[style*="border-radius:22px"]{ border-radius:18px !important; }
+  /* comfortable tap targets */
+  nav button,.cb-tap{ min-height:44px; }
+  /* the open menu must be fully opaque — content behind it was bleeding through */
+  nav [style*="top: 100%"]{ background:var(--bg) !important; box-shadow:0 26px 50px -18px rgba(0,0,0,.85) !important; }
+  nav [style*="top: 100%"] button{ font-size:17px !important; padding:15px 12px !important; }
+  h1{ line-height:1.06 !important; }
+  /* never let a wide element cause sideways scrolling */
+  img,canvas,svg{ max-width:100%; }
+}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
   #mxtei-net,#mxtei-trail,#mxtei-3d{display:none!important}
@@ -520,13 +545,18 @@ h1, h1 *, h2, h2 *{font-family:'Grenze Gotisch','UnifrakturMaguntia',serif !impo
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script>
+// viewport helpers — clientWidth is the reliable CSS-pixel size on mobile
+function vpW(){ const a=document.documentElement.clientWidth||0, b=window.innerWidth||0; return (a&&b)?Math.min(a,b):(a||b||1280); }
+function vpH(){ const a=document.documentElement.clientHeight||0, b=window.innerHeight||0; return (a&&b)?Math.min(a,b):(a||b||800); }
+function isTouch(){ return (window.matchMedia&&window.matchMedia('(pointer: coarse)').matches) || 'ontouchstart' in window; }
+function isPhone(){ return vpW()<760; }
 class Component extends DCLogic {
   state = { view:'main', active:'home', theme:'dark', pkg:null, orderSent:false, contactSent:false, contactSending:false, contactError:false, pidx:0, vw:1200, navOpen:false, form:{name:'',contact:'',msg:''} };
 
   componentDidMount(){
     try{ this.initScene3D(); }catch(e){ console.warn('[3d] init failed, continuing without it', e); }
-    this.initTrail();
-    this._vwr=()=>{ const vw=window.innerWidth; this.setState(s=>({vw, navOpen: vw>=760 ? false : s.navOpen})); };
+    if(!isTouch()) this.initTrail();      // cursor trail is pointless (and costly) on touch
+    this._vwr=()=>{ const vw=vpW(); this.setState(s=>({vw, navOpen: vw>=760 ? false : s.navOpen})); };
     this._vwr();
     window.addEventListener('resize', this._vwr);
     // click ripple — illuminates wherever the cursor lands
@@ -558,6 +588,7 @@ class Component extends DCLogic {
     clearInterval(this._rot);
     if(this._io) this._io.disconnect();
     if(this._secObs) this._secObs.disconnect();
+    clearTimeout(this._revealFallback);
     if(this._onTopScroll) window.removeEventListener('scroll',this._onTopScroll);
   }
 
@@ -566,8 +597,9 @@ class Component extends DCLogic {
     const el=document.getElementById('cb-intro'), content=document.getElementById('cb-content'); if(!el) return;
     const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if(reduce){ el.style.display='none'; if(content) content.style.opacity='1'; return; }
-    const vw=window.innerWidth||document.documentElement.clientWidth||1280, vh=window.innerHeight||document.documentElement.clientHeight||800;
-    const cell=Math.max(9,Math.round(vw/118));
+    const vw=vpW(), vh=vpH(), mob=isPhone();
+    // phones get chunkier pixels: same reveal, a fraction of the DOM nodes
+    const cell=mob ? Math.max(11,Math.round(vw/34)) : Math.max(9,Math.round(vw/118));
     const cols=Math.ceil(vw/cell)+1, rows=Math.ceil(vh/cell)+1;
     // rasterise the gothic "m" at grid resolution -> logo mask
     const mc=document.createElement('canvas'); mc.width=cols; mc.height=rows; const mg=mc.getContext('2d');
@@ -661,15 +693,23 @@ class Component extends DCLogic {
     const canvas=document.getElementById('mxtei-3d'); if(!canvas) return;
     const THREE=window.THREE; if(!THREE){ console.warn('[3d] THREE not loaded'); return; }
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const renderer=new THREE.WebGLRenderer({canvas, antialias:true});
+    const MOB=isPhone();                                   // lighter scene + portrait framing on phones
+    const renderer=new THREE.WebGLRenderer({canvas, antialias:!MOB, powerPreference:'high-performance'});
     renderer.setClearColor(0x070a14,1);
-    let W=window.innerWidth, H=window.innerHeight;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    let W=vpW(), H=vpH();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, MOB?1.5:2));
     renderer.setSize(W,H,false);
     const scene=new THREE.Scene();
     scene.fog=new THREE.FogExp2(0x0a1226,0.006);
     const camera=new THREE.PerspectiveCamera(46,W/H,0.1,240);
-    const camRest=new THREE.Vector3(0,10,48), camStart=new THREE.Vector3(-8,44,118);
+    // portrait: widen the lens rather than walking the camera back into the mountains
+    const REF_A=1.6, REF_FOV=46;
+    const fitFov=()=>{ const a=W/H; if(a>=REF_A) return REF_FOV;
+      const f=2*Math.atan(Math.tan(REF_FOV*Math.PI/360)*(REF_A/Math.max(a,0.35)))*180/Math.PI;
+      return Math.min(62,Math.max(REF_FOV,f)); };
+    const fitDist=(base)=>{ const a=W/H; return a<1.35 ? base*Math.min(1.22,1+(1.35-a)*0.28) : base; };
+    const camRest=new THREE.Vector3(0,10,fitDist(48)), camStart=new THREE.Vector3(-8,44,fitDist(118));
+    camera.fov=fitFov(); camera.updateProjectionMatrix();
     camera.position.copy(camStart); camera.lookAt(0,10,0);
     this._introStart=performance.now(); this._introDur=2700;
 
@@ -704,7 +744,7 @@ class Component extends DCLogic {
     const moonGlow=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(glow),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending})); moonGlow.scale.set(20,20,1); moonGlow.position.copy(moon.position); scene.add(moonGlow);
 
     // stars
-    (function(){ const n=380,p=new Float32Array(n*3); for(let i=0;i<n;i++){ p[i*3]=(Math.random()-.5)*180; p[i*3+1]=Math.random()*80+12; p[i*3+2]=-50-Math.random()*70; } const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(p,3)); scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0xcdd8ff,size:0.4,map:soft,transparent:true,depthWrite:false,opacity:.85}))); })();
+    (function(){ const n=MOB?170:380,p=new Float32Array(n*3); for(let i=0;i<n;i++){ p[i*3]=(Math.random()-.5)*180; p[i*3+1]=Math.random()*80+12; p[i*3+2]=-50-Math.random()*70; } const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(p,3)); scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0xcdd8ff,size:0.4,map:soft,transparent:true,depthWrite:false,opacity:.85}))); })();
 
     // ---- procedural cherry tree ----
     const tree=new THREE.Group(); scene.add(tree);
@@ -724,7 +764,7 @@ class Component extends DCLogic {
       list.forEach(g=>{ pos.set(g.attributes.position.array,vo*3); nor.set(g.attributes.normal.array,vo*3); uv.set(g.attributes.uv.array,vo*2); const gi=g.index.array,cnt=g.attributes.position.count; for(let k=0;k<gi.length;k++) idx.push(gi[k]+vo); vo+=cnt; g.dispose(); });
       const bg=new THREE.BufferGeometry(); bg.setAttribute('position',new THREE.BufferAttribute(pos,3)); bg.setAttribute('normal',new THREE.BufferAttribute(nor,3)); bg.setAttribute('uv',new THREE.BufferAttribute(uv,2)); bg.setIndex(idx); return bg; }
     function addBranch(start,dir,len,rad,depth){
-      if(branches>900) return; branches++;
+      if(branches>(MOB?420:900)) return; branches++;
       dir=dir.clone().normalize();
       // curved branch (two segments, gentle bend + slight upward reach) — organic, not straight
       const perp=new THREE.Vector3(-dir.z,0,dir.x).normalize();
@@ -746,7 +786,7 @@ class Component extends DCLogic {
         addBranch(end,nd,len*(0.72+Math.random()*0.1),rad*0.70,depth-1);
       }
     }
-    addBranch(new THREE.Vector3(0,0.3,0),new THREE.Vector3(0,1,0),6.6,1.3,6);
+    addBranch(new THREE.Vector3(0,0.3,0),new THREE.Vector3(0,1,0),6.6,1.3,MOB?5:6);
     // buttress roots flaring from the trunk and sinking into the island surface
     (function(){ const R=9, MAXR=4.6; for(let i=0;i<R;i++){ const ang=(i/R)*Math.PI*2+(Math.random()-.5)*0.35;
       const ux=Math.cos(ang), uz=Math.sin(ang);
@@ -803,11 +843,11 @@ class Component extends DCLogic {
     function fbm(x,y){ let t=0,amp=0.55,f=1; for(let i=0;i<6;i++){ t+=amp*vn(x*f,y*f); f*=2.04; amp*=0.5; } return t; }
     function ridge(x,y){ let r=1-Math.abs(fbm(x,y)*2-1); return r*r; }
     (function(){
-      const size=620, seg=240;
+      const size=620, seg=MOB?120:240;
       const geo=new THREE.PlaneGeometry(size,size,seg,seg); geo.rotateX(-Math.PI/2);
       const pos=geo.attributes.position, col=new Float32Array(pos.count*3);
       for(let i=0;i<pos.count;i++){ const x=pos.getX(i), z=pos.getZ(i), dist=Math.sqrt(x*x+z*z);
-        const far=Math.min(1,Math.max(0,(dist-52)/72));
+        const far=Math.min(1,Math.max(0,(dist-(MOB?76:52))/72));   // wider valley on phones so the camera never sits inside a peak
         let h=Math.max(0, fbm(x*0.011+40, z*0.011+70)-0.40);
         let elev=Math.pow(h,1.22)*128*far*far;                 // snowy peaks ringing the valley
         elev += ridge(x*0.02+11,z*0.02+5)*30*far*far;          // sharp crest lines
@@ -829,7 +869,7 @@ class Component extends DCLogic {
       let cx=0,cy=0,cz=0; tips.forEach(t=>{cx+=t.x;cy+=t.y;cz+=t.z;}); const n=tips.length||1; cx/=n;cy/=n;cz/=n;
       let rx=1,ry=1,rz=1; tips.forEach(t=>{ rx=Math.max(rx,Math.abs(t.x-cx)); ry=Math.max(ry,Math.abs(t.y-cy)); rz=Math.max(rz,Math.abs(t.z-cz)); });
       const pal=[[1,.70,.82],[1,.60,.75],[1,.48,.67],[1,.82,.9],[1,.90,.94]];
-      const perTip=20, fill=7000, cnt=tips.length*perTip+fill;
+      const perTip=MOB?12:20, fill=MOB?3000:7000, cnt=tips.length*perTip+fill;
       const p=new Float32Array(cnt*3), col=new Float32Array(cnt*3); let k=0;
       const put=(x,y,z)=>{ const c=pal[(Math.random()*pal.length)|0]; p[k*3]=x;p[k*3+1]=y;p[k*3+2]=z; col[k*3]=c[0];col[k*3+1]=c[1];col[k*3+2]=c[2]; k++; };
       tips.forEach(tp=>{ for(let i=0;i<perTip;i++){ const r=0.8+Math.random()*1.4,a=Math.random()*6.283,b=Math.acos(2*Math.random()-1);
@@ -856,12 +896,12 @@ class Component extends DCLogic {
       const isle=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,metalness:0,flatShading:true}));
       isle.position.y=-0.55; tree.add(isle);
       // petals + snow resting on the island top
-      const N=170,pp=new Float32Array(N*3);
+      const N=MOB?80:170,pp=new Float32Array(N*3);
       for(let i=0;i<N;i++){ const a=Math.random()*6.283, rr=Math.sqrt(Math.random())*R*0.88;
         pp[i*3]=Math.cos(a)*rr; pp[i*3+1]=0.42+Math.random()*0.22; pp[i*3+2]=Math.sin(a)*rr; }
       const pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.BufferAttribute(pp,3));
       tree.add(new THREE.Points(pg,new THREE.PointsMaterial({size:0.62,map:petalMap,transparent:true,depthWrite:false,opacity:.9,sizeAttenuation:true,alphaTest:0.02})));
-      const S=120,sp2=new Float32Array(S*3);
+      const S=MOB?60:120,sp2=new Float32Array(S*3);
       for(let i=0;i<S;i++){ const a=Math.random()*6.283, rr=Math.sqrt(Math.random())*R*0.9;
         sp2[i*3]=Math.cos(a)*rr; sp2[i*3+1]=0.5+Math.random()*0.3; sp2[i*3+2]=Math.sin(a)*rr; }
       const sg2=new THREE.BufferGeometry(); sg2.setAttribute('position',new THREE.BufferAttribute(sp2,3));
@@ -869,11 +909,11 @@ class Component extends DCLogic {
     })();
     // smaller companion trees at different heights — only the constant slow rotation
     const smallTrees=[];
-    [[-28,-9,0.5,-7],[28,-15,0.42,6],[-44,-28,0.32,-15]].forEach((sp,i)=>{ const t=tree.clone(true); t.scale.setScalar(sp[2]); t.position.set(sp[0],sp[3],sp[1]); t.rotation.y=Math.random()*6.28;
+    (MOB?[[-26,-10,0.46,-7],[27,-16,0.4,6]]:[[-28,-9,0.5,-7],[28,-15,0.42,6],[-44,-28,0.32,-15]]).forEach((sp,i)=>{ const t=tree.clone(true); t.scale.setScalar(sp[2]); t.position.set(sp[0],sp[3],sp[1]); t.rotation.y=Math.random()*6.28;
       if(i===0||i===2){ const o=makeOwlNest(); o.rotation.y=0.3-i*0.6; t.add(o); }   // owls live on two of the far trees
       scene.add(t); smallTrees.push({o:t, baseY:sp[3], ph:Math.random()*6.283, amp:1.5+Math.random()*1.4, spd:0.16+Math.random()*0.12}); });
     // pink & white flowers growing out of the main island
-    (function(){ const R=7.4, F=54, petalMat=[new THREE.MeshStandardMaterial({color:0xff8fc0,roughness:.85,emissive:0x3a0f24,emissiveIntensity:.35}), new THREE.MeshStandardMaterial({color:0xfff2f8,roughness:.85,emissive:0x33262c,emissiveIntensity:.3})];
+    (function(){ const R=7.4, F=MOB?26:54, petalMat=[new THREE.MeshStandardMaterial({color:0xff8fc0,roughness:.85,emissive:0x3a0f24,emissiveIntensity:.35}), new THREE.MeshStandardMaterial({color:0xfff2f8,roughness:.85,emissive:0x33262c,emissiveIntensity:.3})];
       const stemMat=new THREE.MeshStandardMaterial({color:0x4c6b46,roughness:1});
       const petalG=new THREE.SphereGeometry(0.12,7,6), coreG=new THREE.SphereGeometry(0.07,7,6);
       const coreMat=new THREE.MeshStandardMaterial({color:0xffe08a,emissive:0xffc24d,emissiveIntensity:.5,roughness:.6});
@@ -889,13 +929,13 @@ class Component extends DCLogic {
     })();
 
     // snow
-    const snowN=1250,snP=new Float32Array(snowN*3),snV=[];
+    const snowN=MOB?480:1250,snP=new Float32Array(snowN*3),snV=[];
     for(let i=0;i<snowN;i++){ snP[i*3]=(Math.random()-.5)*92; snP[i*3+1]=Math.random()*58; snP[i*3+2]=(Math.random()-.5)*62-3; snV.push(0.26+Math.random()*0.45); }
     const snG=new THREE.BufferGeometry(); snG.setAttribute('position',new THREE.BufferAttribute(snP,3));
     scene.add(new THREE.Points(snG,new THREE.PointsMaterial({color:0xffffff,size:0.3,map:soft,transparent:true,depthWrite:false,opacity:.9,sizeAttenuation:true})));
 
     // a few detailed petals drifting down slowly
-    const petN=42,ptP=new Float32Array(petN*3),ptV=[];
+    const petN=MOB?22:42,ptP=new Float32Array(petN*3),ptV=[];
     for(let i=0;i<petN;i++){ ptP[i*3]=(Math.random()-.5)*54; ptP[i*3+1]=Math.random()*44; ptP[i*3+2]=(Math.random()-.5)*40-2; ptV.push(0.22+Math.random()*0.4); }
     const ptG=new THREE.BufferGeometry(); ptG.setAttribute('position',new THREE.BufferAttribute(ptP,3));
     scene.add(new THREE.Points(ptG,new THREE.PointsMaterial({size:1.15,map:petalMap,transparent:true,depthWrite:false,opacity:.92,sizeAttenuation:true,alphaTest:0.02})));
@@ -906,7 +946,8 @@ class Component extends DCLogic {
     this._setTreeSection=(key)=>{ this._treeTarget = Math.max(0,secOrder.indexOf(key))*Math.PI*2; };
     const mouse={x:0,y:0}; this._onMove3d=(e)=>{ mouse.x=e.clientX/window.innerWidth-0.5; mouse.y=e.clientY/window.innerHeight-0.5; };
     window.addEventListener('mousemove',this._onMove3d);
-    this._resize3d=()=>{ W=window.innerWidth; H=window.innerHeight; renderer.setSize(W,H,false); camera.aspect=W/H; camera.updateProjectionMatrix(); };
+    this._resize3d=()=>{ W=vpW(); H=vpH(); renderer.setSize(W,H,false); camera.aspect=W/H; camera.fov=fitFov(); camera.updateProjectionMatrix();
+      camRest.z=fitDist(48); camStart.z=fitDist(118); };
     window.addEventListener('resize',this._resize3d);
 
     const clock=new THREE.Clock();
@@ -1004,12 +1045,18 @@ class Component extends DCLogic {
       this._io = new IntersectionObserver((es)=>{
         es.forEach(e=>{ if(e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='none'; this._io.unobserve(e.target); } });
       }, {threshold:0.08, rootMargin:'0px 0px -6% 0px'});
-      document.querySelectorAll('[data-reveal]').forEach((el,i)=>{
+      const els=[...document.querySelectorAll('[data-reveal]')];
+      els.forEach((el,i)=>{
         const d=(i%8)*0.06;
         el.style.transition=`opacity .7s cubic-bezier(.2,.7,.2,1) ${d}s, transform .7s cubic-bezier(.2,.7,.2,1) ${d}s`;
         el.style.opacity='0'; el.style.transform='translateY(28px)';
         this._io.observe(el);
       });
+      // safety net: anything already on screen (or if IO never fires) must not stay invisible
+      const show=el=>{ el.style.opacity='1'; el.style.transform='none'; if(this._io) this._io.unobserve(el); };
+      requestAnimationFrame(()=>{ els.forEach(el=>{ const r=el.getBoundingClientRect(); if(r.top < (window.innerHeight||800)) show(el); }); });
+      clearTimeout(this._revealFallback);
+      this._revealFallback=setTimeout(()=>{ els.forEach(el=>{ if(getComputedStyle(el).opacity==='0'){ const r=el.getBoundingClientRect(); if(r.top < (window.innerHeight||800)*1.2) show(el); } }); }, 1400);
     }, 40);
   }
 
