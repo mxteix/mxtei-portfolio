@@ -567,30 +567,52 @@ class Component extends DCLogic {
     const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if(reduce){ el.style.display='none'; if(content) content.style.opacity='1'; return; }
     const vw=window.innerWidth||document.documentElement.clientWidth||1280, vh=window.innerHeight||document.documentElement.clientHeight||800;
-    const cell=Math.max(12,Math.round(vw/92));
+    const cell=Math.max(9,Math.round(vw/118));           // small pixels => highly detailed
     const cols=Math.ceil(vw/cell)+1, rows=Math.ceil(vh/cell)+1;
-    // rasterise the gothic "m" to the grid resolution -> logo mask (slimmer via a higher threshold)
+    // rasterise the gothic "m" at grid resolution -> logo mask
     const mc=document.createElement('canvas'); mc.width=cols; mc.height=rows; const mg=mc.getContext('2d');
     mg.fillStyle='#000'; mg.fillRect(0,0,cols,rows); mg.fillStyle='#fff'; mg.textAlign='center'; mg.textBaseline='middle';
-    mg.font='400 '+Math.floor(rows*0.70)+"px 'UnifrakturMaguntia','Grenze Gotisch',serif";
+    mg.font='400 '+Math.floor(rows*0.66)+"px 'UnifrakturMaguntia','Grenze Gotisch',serif";
     mg.fillText('m', cols/2, rows*0.54);
-    const mask=mg.getImageData(0,0,cols,rows).data;
-    el.style.display='grid'; el.style.gridTemplateColumns='repeat('+cols+',1fr)'; el.style.gridTemplateRows='repeat('+rows+',1fr)'; el.style.background='transparent'; el.innerHTML='';
-    const cx=(cols-1)/2, cy=(rows-1)/2, maxD=Math.hypot(cx,cy)||1, dark=['#08060e','#120814','#241021','#07060d'], cells=[];
-    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){ const isLogo=mask[(r*cols+c)*4]>205;   // high cut => slim strokes
+    const md=mg.getImageData(0,0,cols,rows).data;
+    const isL=(c,r)=> c>=0&&r>=0&&c<cols&&r<rows && md[(r*cols+c)*4]>215;   // high cut => slim strokes
+    el.style.display='grid'; el.style.gridTemplateColumns='repeat('+cols+',1fr)'; el.style.gridTemplateRows='repeat('+rows+',1fr)'; el.style.background='#07060d'; el.innerHTML='';
+    const cx=(cols-1)/2, cy=(rows-1)/2, maxD=Math.hypot(cx,cy)||1, cells=[];
+    const pinks=['#ff6aa6','#ffd2e2','#ff2d7e','#ffffff'], blacks=['#07060d','#0d0912','#140b16'];
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+      const logo=isL(c,r);
+      let outline=false;
+      if(!logo){ for(let dr=-1;dr<=1&&!outline;dr++) for(let dc=-1;dc<=1;dc++){ if(isL(c+dc,r+dr)){ outline=true; break; } } }
       const d=document.createElement('div'); d.style.willChange='opacity,transform';
-      if(isLogo){ const t=Math.random(); d.style.background=t<0.5?'#ff6aa6':(t<0.8?'#ffd2e2':'#ffffff'); }
-      else d.style.background=dark[(Math.random()*dark.length)|0];
-      el.appendChild(d); cells.push({d,isLogo,dx:(c-cx)/maxD,dy:(r-cy)/maxD,dist:Math.hypot(c-cx,r-cy)}); }
-    const BURST=2450;   // moment the logo detonates
-    cells.forEach(o=>{ if(o.isLogo){
-        // fade IN to form the logo, hold, then blast outward
-        try{ o.d.animate([{opacity:0,transform:'scale(.3)'},{opacity:1,transform:'scale(1)'}],{duration:620,delay:340+o.dist*9+Math.random()*160,easing:'cubic-bezier(.2,.8,.3,1)',fill:'forwards'}); }catch(e){ o.d.style.opacity='1'; }
-        const ang=Math.atan2(o.dy,o.dx)+(Math.random()-0.5)*0.5, pow=(320+Math.random()*640);
-        setTimeout(()=>{ try{ o.d.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translate('+Math.cos(ang)*pow+'px,'+Math.sin(ang)*pow+'px) scale(.2) rotate('+((Math.random()-.5)*540)+'deg)'}],{duration:900,easing:'cubic-bezier(.15,.7,.3,1)',fill:'forwards'}); }catch(e){ o.d.style.opacity='0'; } }, BURST);
-      } else { const delay=300+(o.dist/maxD)*640+Math.random()*150;
-        try{ o.d.animate([{opacity:1},{opacity:1,offset:.15},{opacity:0,transform:'scale(.1)'}],{duration:600,delay,easing:'cubic-bezier(.5,0,.4,1)',fill:'forwards'}); }catch(e){ o.d.style.opacity='0'; } } });
-    // cherry-blossom petal explosion at the burst
+      // start: black + pink noise across the whole screen
+      d.style.background = Math.random()<0.42 ? pinks[(Math.random()*pinks.length)|0] : blacks[(Math.random()*blacks.length)|0];
+      el.appendChild(d);
+      cells.push({d,logo,outline,dx:(c-cx)/maxD,dy:(r-cy)/maxD,dist:Math.hypot(c-cx,r-cy)});
+    }
+    const FORM=760, BURST=1450;    // form the M fast, then detonate
+    cells.forEach(o=>{
+      const nd=o.dist/maxD;
+      if(o.logo){
+        // settle into a bright pink/white logo pixel
+        const col=Math.random()<0.5?'#ff6aa6':(Math.random()<0.6?'#ffd2e2':'#ffffff');
+        try{ o.d.animate([{opacity:0.85,transform:'scale(1)'},{opacity:1,transform:'scale(1)'}],{duration:FORM*0.7,delay:120+nd*160,easing:'ease-out',fill:'forwards'}); }catch(e){}
+        setTimeout(()=>{ o.d.style.background=col; }, 120+nd*160);
+      } else if(o.outline){
+        // crisp black outline so the M reads clearly
+        setTimeout(()=>{ o.d.style.background='#000000'; }, 120+nd*160);
+        try{ o.d.animate([{opacity:1},{opacity:1}],{duration:FORM,fill:'forwards'}); }catch(e){}
+      } else {
+        // everything else dissolves away, revealing the logo
+        try{ o.d.animate([{opacity:1},{opacity:0,transform:'scale(.15)'}],{duration:420,delay:80+nd*430,easing:'cubic-bezier(.5,0,.4,1)',fill:'forwards'}); }catch(e){ o.d.style.opacity='0'; }
+      }
+    });
+    // blast the logo + outline outward at BURST
+    setTimeout(()=>{ el.style.background='transparent';
+      cells.forEach(o=>{ if(!o.logo && !o.outline) return;
+        const ang=Math.atan2(o.dy,o.dx)+(Math.random()-0.5)*0.5, pow=(300+Math.random()*620);
+        try{ o.d.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translate('+Math.cos(ang)*pow+'px,'+Math.sin(ang)*pow+'px) scale(.2) rotate('+((Math.random()-.5)*540)+'deg)'}],{duration:720,easing:'cubic-bezier(.15,.7,.3,1)',fill:'forwards'}); }catch(e){ o.d.style.opacity='0'; } });
+    }, BURST);
+    // cherry-blossom petal explosion
     setTimeout(()=>{
       const burst=document.createElement('div');
       burst.style.cssText='position:fixed;inset:0;z-index:121;pointer-events:none;overflow:hidden';
@@ -598,22 +620,22 @@ class Component extends DCLogic {
       const flash=document.createElement('div');
       flash.style.cssText='position:absolute;left:50%;top:50%;width:38vmax;height:38vmax;transform:translate(-50%,-50%) scale(.2);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,150,200,.55) 38%,rgba(255,90,160,0) 70%)';
       burst.appendChild(flash);
-      try{ flash.animate([{opacity:.95,transform:'translate(-50%,-50%) scale(.15)'},{opacity:0,transform:'translate(-50%,-50%) scale(1.5)'}],{duration:850,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}); }catch(e){}
+      try{ flash.animate([{opacity:.95,transform:'translate(-50%,-50%) scale(.15)'},{opacity:0,transform:'translate(-50%,-50%) scale(1.5)'}],{duration:680,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}); }catch(e){}
       const cols2=['#ffffff','#ffd2e2','#ff9dc6','#ff6aa6','#ff2d7e'];
-      for(let i=0;i<110;i++){ const p=document.createElement('div');
+      for(let i=0;i<120;i++){ const p=document.createElement('div');
         const sz=7+Math.random()*13, c1=cols2[(Math.random()*cols2.length)|0];
         p.style.cssText='position:absolute;left:50%;top:50%;width:'+sz+'px;height:'+(sz*1.25)+'px;background:'+c1+';border-radius:60% 60% 55% 55%/70% 70% 40% 40%;opacity:.95;will-change:transform,opacity;box-shadow:0 0 8px rgba(255,140,190,.5)';
         burst.appendChild(p);
-        const ang=Math.random()*6.283, dist=180+Math.random()*760, dur=1100+Math.random()*900;
+        const ang=Math.random()*6.283, dist=200+Math.random()*780, dur=850+Math.random()*700;
         try{ p.animate([{transform:'translate(-50%,-50%) scale(.4) rotate(0deg)',opacity:1},
                         {transform:'translate(calc(-50% + '+Math.cos(ang)*dist+'px), calc(-50% + '+(Math.sin(ang)*dist+120+Math.random()*180)+'px)) scale(1) rotate('+((Math.random()-.5)*900)+'deg)',opacity:0}],
                        {duration:dur,easing:'cubic-bezier(.1,.65,.3,1)',fill:'forwards'}); }catch(e){}
       }
-      setTimeout(()=>burst.remove(), 2200);
+      setTimeout(()=>burst.remove(), 1700);
     }, BURST);
     if(content) content.style.opacity='0';
-    setTimeout(()=>{ if(content){ try{ content.animate([{opacity:0,transform:'scale(1.02)'},{opacity:1,transform:'none'}],{duration:1000,easing:'ease-out',fill:'forwards'}); }catch(e){} content.style.opacity='1'; } }, BURST+180);
-    setTimeout(()=>{ el.style.display='none'; el.innerHTML=''; }, BURST+1000);
+    setTimeout(()=>{ if(content){ try{ content.animate([{opacity:0,transform:'scale(1.02)'},{opacity:1,transform:'none'}],{duration:760,easing:'ease-out',fill:'forwards'}); }catch(e){} content.style.opacity='1'; } }, BURST+120);
+    setTimeout(()=>{ el.style.display='none'; el.innerHTML=''; }, BURST+820);
   }
   // quick pink-white light sweep on navigation
   playTransition(){
@@ -726,57 +748,54 @@ class Component extends DCLogic {
       }
     }
     addBranch(new THREE.Vector3(0,0.3,0),new THREE.Vector3(0,1,0),6.6,1.3,6);
-    // chunky gnarled roots gripping the island top and curling over its edge
-    (function(){ const R=9; for(let i=0;i<R;i++){ const ang=(i/R)*Math.PI*2+(Math.random()-.5)*0.4; const jx=(Math.random()-.5)*0.5, jz=(Math.random()-.5)*0.5;
-      let pos=new THREE.Vector3(Math.cos(ang)*0.9,0.8,Math.sin(ang)*0.9);
-      let dir=new THREE.Vector3(Math.cos(ang)+jx,-0.55,Math.sin(ang)+jz).normalize();
-      let rad=0.82+Math.random()*0.32, len=1.9+Math.random()*0.8; const segs=4+((Math.random()*2)|0);
-      for(let s=0;s<segs;s++){ const end=pos.clone().add(dir.clone().multiplyScalar(len)); if(s<2 && end.y<-0.1) end.y=-0.1+Math.random()*0.14;
-        branchCyl(pos,end,rad,rad*0.8); pos=end;
-        dir=new THREE.Vector3(Math.cos(ang)+jx*1.3+(Math.random()-.5)*0.5, (s>=1?-0.5:-0.12)+(Math.random()-.5)*0.25, Math.sin(ang)+jz*1.3+(Math.random()-.5)*0.5).normalize();
-        len*=0.82; rad*=0.76; }
+    // buttress roots flaring from the trunk and sinking into the island surface
+    (function(){ const R=9, MAXR=4.6; for(let i=0;i<R;i++){ const ang=(i/R)*Math.PI*2+(Math.random()-.5)*0.35;
+      const ux=Math.cos(ang), uz=Math.sin(ang);
+      let pos=new THREE.Vector3(ux*0.75,1.15,uz*0.75);
+      let rad=0.9+Math.random()*0.3;
+      const segs=3, reach=(2.6+Math.random()*1.5);
+      for(let s=0;s<segs;s++){
+        const t=(s+1)/segs;
+        const rr=Math.min(MAXR, 0.75+reach*t);
+        const wob=(Math.random()-.5)*0.35;
+        const end=new THREE.Vector3(ux*rr+(-uz*wob), Math.max(0.12, 1.15-Math.pow(t,0.7)*1.25), uz*rr+(ux*wob));
+        branchCyl(pos,end,rad,rad*0.62); pos=end; rad*=0.6;
+      }
     } })();
     // merge all trunk/branch/root cylinders into one mesh (keeps draw calls low for clones)
     tree.add(new THREE.Mesh(mergeGeoms(branchGeoms), bark));
-    // hollow in the trunk with a twig nest and a white snow owl sitting in it
-    (function(){ const oy=4.0, oz=1.12, S=1.9;   // S = overall owl/nest scale
-      // carved hollow: dark recess ringed with a raised bark lip
+    // owl + nest builder (attached to the smaller background trees, not the main one)
+    function makeOwlNest(){ const grp=new THREE.Group(); const oy=4.0, oz=1.12, S=1.9;
       const rim=new THREE.Mesh(new THREE.TorusGeometry(0.78*S,0.15*S,8,20), bark);
-      rim.position.set(0,oy,oz*0.62); rim.scale.set(1,1.18,0.7); tree.add(rim);
+      rim.position.set(0,oy,oz*0.62); rim.scale.set(1,1.18,0.7); grp.add(rim);
       const cave=new THREE.Mesh(new THREE.SphereGeometry(0.76*S,20,16), new THREE.MeshBasicMaterial({color:0x05040a}));
-      cave.scale.set(1,1.2,0.62); cave.position.set(0,oy,oz*0.34); tree.add(cave);
-      // twig nest inside the hollow
-      const nest=new THREE.Group(); nest.position.set(0,oy-0.42*S,oz*0.5); tree.add(nest);
+      cave.scale.set(1,1.2,0.62); cave.position.set(0,oy,oz*0.34); grp.add(cave);
+      const nest=new THREE.Group(); nest.position.set(0,oy-0.42*S,oz*0.5); grp.add(nest);
       const twig=new THREE.MeshStandardMaterial({color:0x6b4a3a,roughness:1});
       for(let i=0;i<26;i++){ const a=Math.random()*6.283, rr=(0.30+Math.random()*0.34)*S;
         const t=new THREE.Mesh(new THREE.CylinderGeometry(0.028*S,0.028*S,(0.42+Math.random()*0.5)*S,5),twig);
         t.position.set(Math.cos(a)*rr,(Math.random()-0.5)*0.16*S,Math.sin(a)*rr*0.6);
         t.rotation.set(Math.PI/2+(Math.random()-0.5)*0.5, a+(Math.random()-0.5)*0.6, (Math.random()-0.5)*0.5); nest.add(t); }
-      // owl
-      const owl=new THREE.Group(); owl.position.set(0,oy-0.16*S,oz*0.62); tree.add(owl);
+      const owl=new THREE.Group(); owl.position.set(0,oy-0.16*S,oz*0.62); grp.add(owl);
       const white=new THREE.MeshStandardMaterial({color:0xf4f7ff,roughness:.92});
       const cream=new THREE.MeshStandardMaterial({color:0xd9def0,roughness:.95});
       const body=new THREE.Mesh(new THREE.SphereGeometry(0.42*S,20,18),white); body.scale.set(1,1.22,0.92); owl.add(body);
-      // speckled chest markings
-      for(let i=0;i<16;i++){ const s=new THREE.Mesh(new THREE.SphereGeometry(0.045*S,6,6),cream);
+      for(let i=0;i<16;i++){ const sp=new THREE.Mesh(new THREE.SphereGeometry(0.045*S,6,6),cream);
         const a=(Math.random()-0.5)*1.5, yy=(Math.random()-0.6)*0.5*S;
-        s.position.set(Math.sin(a)*0.34*S, yy, 0.30*S+Math.cos(a)*0.06*S); owl.add(s); }
-      // wings tucked at the sides
+        sp.position.set(Math.sin(a)*0.34*S, yy, 0.30*S+Math.cos(a)*0.06*S); owl.add(sp); }
       [-1,1].forEach(sgn=>{ const w=new THREE.Mesh(new THREE.SphereGeometry(0.2*S,14,12),cream);
         w.scale.set(0.5,1.25,0.85); w.position.set(sgn*0.37*S,-0.04*S,0.06*S); w.rotation.z=sgn*0.18; owl.add(w); });
       const head=new THREE.Mesh(new THREE.SphereGeometry(0.33*S,20,18),white); head.position.set(0,0.46*S,0.03*S); head.scale.set(1.06,0.96,1); owl.add(head);
-      // facial disc + ear tufts
       const disc=new THREE.Mesh(new THREE.SphereGeometry(0.28*S,18,16),cream); disc.scale.set(1,0.92,0.42); disc.position.set(0,0.45*S,0.2*S); owl.add(disc);
       const tuftG=new THREE.ConeGeometry(0.085*S,0.26*S,7);
       [[-0.17,0.36],[0.17,-0.36]].forEach(t=>{ const m=new THREE.Mesh(tuftG,white); m.position.set(t[0]*S,0.72*S,0.02*S); m.rotation.z=t[1]; owl.add(m); });
       const eyeMat=new THREE.MeshStandardMaterial({color:0xffcf6b,emissive:0xffae2b,emissiveIntensity:0.85,roughness:.4}), pupMat=new THREE.MeshBasicMaterial({color:0x0a0608});
       [-0.13,0.13].forEach(ex=>{ const e=new THREE.Mesh(new THREE.SphereGeometry(0.105*S,14,12),eyeMat); e.position.set(ex*S,0.47*S,0.26*S); owl.add(e);
-        const p=new THREE.Mesh(new THREE.SphereGeometry(0.052*S,10,10),pupMat); p.position.set(ex*S,0.47*S,0.33*S); owl.add(p); });
+        const pp=new THREE.Mesh(new THREE.SphereGeometry(0.052*S,10,10),pupMat); pp.position.set(ex*S,0.47*S,0.33*S); owl.add(pp); });
       const beak=new THREE.Mesh(new THREE.ConeGeometry(0.055*S,0.15*S,7),new THREE.MeshStandardMaterial({color:0xffa94d,roughness:.7}));
       beak.position.set(0,0.36*S,0.3*S); beak.rotation.x=Math.PI/2; owl.add(beak);
-      // little glow so the owl reads at a distance
-      const gl=new THREE.PointLight(0xffd9a0,0.5,7); gl.position.set(0,oy,oz+0.6); tree.add(gl);
-    })();
+      const gl=new THREE.PointLight(0xffd9a0,0.5,7); gl.position.set(0,oy,oz+0.6); grp.add(gl);
+      return grp; }
     // ground + distant snow-capped mountains (fbm-displaced terrain)
     function hash(x,y){ const h=Math.sin(x*127.1+y*311.7)*43758.5453; return h-Math.floor(h); }
     function vn(x,y){ const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
@@ -851,7 +870,24 @@ class Component extends DCLogic {
     })();
     // smaller companion trees at different heights — only the constant slow rotation
     const smallTrees=[];
-    [[-28,-9,0.5,-7],[28,-15,0.42,6],[-44,-28,0.32,-15]].forEach(sp=>{ const t=tree.clone(true); t.scale.setScalar(sp[2]); t.position.set(sp[0],sp[3],sp[1]); t.rotation.y=Math.random()*6.28; scene.add(t); smallTrees.push(t); });
+    [[-28,-9,0.5,-7],[28,-15,0.42,6],[-44,-28,0.32,-15]].forEach((sp,i)=>{ const t=tree.clone(true); t.scale.setScalar(sp[2]); t.position.set(sp[0],sp[3],sp[1]); t.rotation.y=Math.random()*6.28;
+      if(i===0||i===2){ const o=makeOwlNest(); o.rotation.y=0.3-i*0.6; t.add(o); }   // owls live on two of the far trees
+      scene.add(t); smallTrees.push({o:t, baseY:sp[3], ph:Math.random()*6.283, amp:1.5+Math.random()*1.4, spd:0.16+Math.random()*0.12}); });
+    // pink & white flowers growing out of the main island
+    (function(){ const R=7.4, F=54, petalMat=[new THREE.MeshStandardMaterial({color:0xff8fc0,roughness:.85,emissive:0x3a0f24,emissiveIntensity:.35}), new THREE.MeshStandardMaterial({color:0xfff2f8,roughness:.85,emissive:0x33262c,emissiveIntensity:.3})];
+      const stemMat=new THREE.MeshStandardMaterial({color:0x4c6b46,roughness:1});
+      const petalG=new THREE.SphereGeometry(0.12,7,6), coreG=new THREE.SphereGeometry(0.07,7,6);
+      const coreMat=new THREE.MeshStandardMaterial({color:0xffe08a,emissive:0xffc24d,emissiveIntensity:.5,roughness:.6});
+      for(let i=0;i<F;i++){ const a=Math.random()*6.283, rr=Math.sqrt(Math.random())*R*0.82;
+        const x=Math.cos(a)*rr, z=Math.sin(a)*rr, h=0.5+Math.random()*0.55;
+        const g=new THREE.Group(); g.position.set(x,0.35,z);
+        const st=new THREE.Mesh(new THREE.CylinderGeometry(0.028,0.04,h,5),stemMat); st.position.y=h/2; st.rotation.z=(Math.random()-.5)*0.35; g.add(st);
+        const mat=petalMat[Math.random()<0.55?0:1];
+        for(let k=0;k<5;k++){ const pt=new THREE.Mesh(petalG,mat); const an=(k/5)*6.283;
+          pt.position.set(Math.cos(an)*0.14,h,Math.sin(an)*0.14); pt.scale.set(1,0.45,1); g.add(pt); }
+        const co=new THREE.Mesh(coreG,coreMat); co.position.y=h+0.02; g.add(co);
+        tree.add(g); }
+    })();
 
     // snow
     const snowN=1250,snP=new Float32Array(snowN*3),snV=[];
@@ -881,7 +917,11 @@ class Component extends DCLogic {
       this._treeCur += (this._treeTarget-this._treeCur)*Math.min(1,dt*1.7);
       this._spin=(this._spin||0)+dt*0.075;            // gentle constant rotation
       tree.rotation.y=this._spin+this._treeCur;
-      for(let i=0;i<smallTrees.length;i++) smallTrees[i].rotation.y += dt*0.075*(0.85+i*0.12);
+      const tsec=performance.now()*0.001;
+      for(let i=0;i<smallTrees.length;i++){ const st=smallTrees[i];
+        st.o.rotation.y += dt*0.075*(0.85+i*0.12);
+        st.o.position.y = st.baseY + Math.sin(tsec*st.spd + st.ph)*st.amp;   // gentle float up/down
+      }
       const a=snG.attributes.position.array; for(let i=0;i<snowN;i++){ a[i*3+1]-=snV[i]*dt*3.2; a[i*3]+=Math.sin(performance.now()*0.00022+i)*0.009; if(a[i*3+1]<-38) a[i*3+1]=56; } snG.attributes.position.needsUpdate=true;
       const b=ptG.attributes.position.array; for(let i=0;i<petN;i++){ b[i*3+1]-=ptV[i]*dt*2.6; b[i*3]+=Math.sin(performance.now()*0.0004+i)*0.016; if(b[i*3+1]<-34){ b[i*3+1]=44; b[i*3]=(Math.random()-.5)*54; } } ptG.attributes.position.needsUpdate=true;
       const ip=Math.min(1,(performance.now()-this._introStart)/this._introDur);
