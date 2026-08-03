@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>mxtei — 3D preview</title>
-<meta name="description" content="Marcell Szoke (mxtei) builds websites, apps, games and Discord bots, and grows communities past 250,000 members. Available for freelance projects.">
+<meta name="description" content="Marcell (mxtei) builds websites, apps, games and Discord bots, and grows communities past 250,000 members. Available for freelance projects.">
 <link rel="canonical" href="https://mxtei.com/">
 <meta name="theme-color" content="#0b0508">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -192,7 +192,7 @@ h1, h1 *, h2, h2 *{font-family:'Grenze Gotisch','UnifrakturMaguntia',serif !impo
             I build <span style="display:inline-block;position:relative;background:var(--grad);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:glitchA 4.4s steps(1) infinite, colorRoamA 9s ease-in-out infinite;will-change:transform,filter" style-after="content:'';position:absolute;inset:-2px;background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(255,224,238,.12) 5px 6px);mix-blend-mode:screen;pointer-events:none;animation:scanmove 1.6s linear infinite">software</span> & grow <span style="display:inline-block;position:relative;background:var(--grad);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:glitchB 5.3s steps(1) .8s infinite, colorRoamB 11.5s ease-in-out infinite;will-change:transform,filter" style-after="content:'';position:absolute;inset:-2px;background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(255,224,238,.12) 5px 6px);mix-blend-mode:screen;pointer-events:none;animation:scanmove 1.8s linear infinite">communities</span>.
           </h1>
           <p data-reveal style="font-size:clamp(16px,2vw,20px);color:var(--muted);max-width:62ch;margin:26px auto 0;line-height:1.6">
-            Hi, I'm Marcell Szoke — a website, app, game & Discord developer and community strategist. I script in Lua, JavaScript & Python, and I've grown communities past a quarter-million members.
+            Hi, I'm Marcell — a website, app, game & Discord developer and community strategist. I script in Lua, JavaScript & Python, and I've grown communities past a quarter-million members.
           </p>
           <div data-reveal style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:36px">
             <button onClick="{{ go.services }}" style="background:var(--grad);color:#fff;border:none;padding:15px 30px;border-radius:13px;font:600 16px 'Space Grotesk';cursor:pointer;box-shadow:0 12px 34px -10px var(--glow-k);transition:transform .2s" style-hover="transform:translateY(-3px)">View services & pricing</button>
@@ -281,7 +281,7 @@ h1, h1 *, h2, h2 *{font-family:'Grenze Gotisch','UnifrakturMaguntia',serif !impo
         <div style="display:grid;grid-template-columns:1.3fr .9fr;gap:44px;align-items:start">
           <div data-reveal>
             <div style="font:500 13px 'JetBrains Mono';color:var(--pink);text-transform:uppercase;letter-spacing:.14em;margin-bottom:14px">About</div>
-            <h1 style="font:700 clamp(34px,5vw,56px)/1.05 'Space Grotesk';letter-spacing:-.03em;margin:0 0 22px">Marcell Szoke.<br>Building software &<br>growing communities.</h1>
+            <h1 style="font:700 clamp(34px,5vw,56px)/1.05 'Space Grotesk';letter-spacing:-.03em;margin:0 0 22px">Marcell.<br>Building software &<br>growing communities.</h1>
             <p style="color:var(--muted);font-size:17px;line-height:1.7;margin:0 0 16px">I'm a website, app, game and Discord developer with 3+ years building for companies and individuals — and turning quiet servers into thriving communities. I write clean, reliable code and I know what actually makes people stay, engage, and invite their friends.</p>
             <p style="color:var(--muted);font-size:17px;line-height:1.7;margin:0 0 16px">My work spans three languages — <strong style="color:var(--text)">Lua, JavaScript & Python</strong> — across websites, apps, games and Discord, plus hands-on growth and partnership strategy on Discord and Instagram. I've helped gain 250k+ followers and closed 30+ partnerships.</p>
             <p style="color:var(--muted);font-size:17px;line-height:1.7;margin:0">If you want it done once, done right, and explained clearly — that's what I do.</p>
@@ -289,11 +289,11 @@ h1, h1 *, h2, h2 *{font-family:'Grenze Gotisch','UnifrakturMaguntia',serif !impo
           <div data-reveal style="position:sticky;top:96px">
             <div style="border-radius:22px;border:1px solid var(--border);background:var(--surface);padding:26px">
               <div style="aspect-ratio:1;border-radius:16px;background:#0b1533 url('assets/marcell.jpg') 70% 42%/cover;margin-bottom:20px;box-shadow:inset 0 0 60px rgba(0,0,0,.25)"></div>
-              <div style="font:600 20px 'Space Grotesk'">Marcell Szoke</div>
+              <div style="font:600 20px 'Space Grotesk'">Marcell</div>
               <div style="color:var(--muted);font-size:14px;margin-bottom:16px">Web · App · Game · Discord Developer</div>
               <div style="display:flex;flex-direction:column;gap:9px">
                 <sc-for list="{{ contactRows }}" as="cr" hint-placeholder-count="4">
-                  <div style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted)"><span style="width:22px;text-align:center">{{ cr.icon }}</span>{{ cr.val }}</div>
+                  <a href="{{ cr.href }}" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted);text-decoration:none;transition:color .2s,transform .2s" style-hover="color:var(--pink);transform:translateX(3px)"><span style="width:22px;text-align:center">{{ cr.icon }}</span>{{ cr.val }}</a>
                 </sc-for>
               </div>
             </div>
@@ -531,7 +531,7 @@ h1, h1 *, h2, h2 *{font-family:'Grenze Gotisch','UnifrakturMaguntia',serif !impo
             <span style="width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font:700 16px 'Space Grotesk';color:#fff">m</span>
             <span style="font:700 19px 'Space Grotesk';background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent">mxtei</span>
           </div>
-          <div style="color:var(--faint);font-size:13px">© 2026 Marcell Szoke · Web · app · game · Discord dev & community growth</div>
+          <div style="color:var(--faint);font-size:13px">© 2026 Marcell · Web · app · game · Discord dev & community growth</div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <sc-for list="{{ navlinks }}" as="lnk" hint-placeholder-count="7">
@@ -1127,10 +1127,10 @@ class Component extends DCLogic {
       {step:'04', title:'Launch', desc:'Deployed, tested, documented — and I stick around for support.'},
     ];
     const contactRows = [
-      {icon:'💬', val:'@ttwb on Discord'},
-      {icon:'📸', val:'@m4xteii on Instagram'},
-      {icon:'💼', val:'marcellszoke@icloud.com (business)'},
-      {icon:'✉️', val:'mxldisc@gmail.com'},
+      {icon:'💬', val:'@ttwb on Discord', href:'https://discord.com/users/379660404378566656'},
+      {icon:'📸', val:'@mxteii on Instagram', href:'https://instagram.com/mxteii'},
+      {icon:'💼', val:'marcellszoke@icloud.com (business)', href:'mailto:marcellszoke@icloud.com'},
+      {icon:'✉️', val:'mxldisc@gmail.com', href:'mailto:mxldisc@gmail.com'},
     ];
 
     const mkSelect = (pkg)=>()=>{ this.playTransition&&this.playTransition(); this.setState({pkg, view:'checkout', navOpen:false}); };
@@ -1203,7 +1203,7 @@ class Component extends DCLogic {
     const openLink = (href)=>(e)=>{ if(e){ e.preventDefault(); e.stopPropagation(); } window.open(href,'_blank','noopener,noreferrer'); };
     const socialCards = [
       {icon:'💬', label:'Discord', val:'@ttwb', href:'https://discord.com/users/379660404378566656'},
-      {icon:'📸', label:'Instagram', val:'@m4xteii', href:'https://www.instagram.com/m4xteii'},
+      {icon:'📸', label:'Instagram', val:'@mxteii', href:'https://instagram.com/mxteii'},
       {icon:'💼', label:'Business email', val:'marcellszoke@icloud.com', href:'mailto:marcellszoke@icloud.com'},
       {icon:'✉️', label:'Email', val:'mxldisc@gmail.com', href:'mailto:mxldisc@gmail.com'},
     ].map(s=>({ ...s, onClick: openLink(s.href) }));
