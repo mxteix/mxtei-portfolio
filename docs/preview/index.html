@@ -396,7 +396,40 @@ h1, h1 *, h2, h2 *{font-family:'Grenze Gotisch','UnifrakturMaguntia',serif !impo
         <div style="text-align:center;margin-bottom:44px" data-reveal>
           <div style="font:500 13px 'JetBrains Mono';color:var(--pink);text-transform:uppercase;letter-spacing:.14em;margin-bottom:14px">Portfolio</div>
           <h1 style="font:700 clamp(34px,5vw,56px) 'Space Grotesk';letter-spacing:-.03em;margin:0">Selected work.</h1>
-          <p style="color:var(--muted);font-size:17px;max-width:54ch;margin:16px auto 0">Websites, apps, games, bots and growth projects I'm proud of — with the ballpark price each landed at.</p>
+          <p style="color:var(--muted);font-size:17px;max-width:56ch;margin:16px auto 0">Long-running engagements for companies, startups and creators — alongside smaller builds delivered to spec.</p>
+        </div>
+
+        <!-- FLAGSHIP / MAJOR ENGAGEMENTS -->
+        <div data-reveal style="display:flex;align-items:center;gap:14px;margin:0 0 22px">
+          <span style="font:500 13px 'JetBrains Mono';color:var(--pink);text-transform:uppercase;letter-spacing:.14em;white-space:nowrap">Major engagements</span>
+          <span style="flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)"></span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:26px">
+          <sc-for list="{{ flagship }}" as="fg" hint-placeholder-count="4">
+            <div data-reveal style="position:relative;padding:26px 26px 24px;border-radius:22px;border:1px solid var(--border);background:linear-gradient(150deg,color-mix(in srgb,var(--pink) 10%,transparent),var(--surface) 55%);overflow:hidden;transition:transform .25s,box-shadow .25s,border-color .25s" style-hover="transform:translateY(-6px);border-color:var(--pink);box-shadow:0 26px 60px -30px var(--glow-k)">
+              <div aria-hidden="true" style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)"></div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+                <span style="font:700 26px 'Space Grotesk'">{{ fg.emoji }}</span>
+                <span style="font:600 11px 'JetBrains Mono';padding:4px 10px;border-radius:99px;background:var(--grad);color:#fff;letter-spacing:.04em">{{ fg.badge }}</span>
+              </div>
+              <h3 style="font:700 21px 'Space Grotesk';margin:0 0 4px;letter-spacing:-.01em">{{ fg.title }}</h3>
+              <div style="font:700 30px 'Space Grotesk';background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:10px">{{ fg.scale }}</div>
+              <p style="color:var(--muted);font-size:14.5px;line-height:1.6;margin:0 0 14px">{{ fg.blurb }}</p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ fg.tags }}" as="tg" hint-placeholder-count="3">
+                  <span style="font:500 11.5px 'JetBrains Mono';padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted)">{{ tg }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div data-reveal style="padding:20px 24px;border-radius:18px;border:1px dashed var(--border);background:var(--surface);margin-bottom:44px;color:var(--muted);font-size:15px;line-height:1.65">
+          <strong style="color:var(--text)">Plus numerous large-scale engagements</strong> — multi-month projects running into hundreds of hours for companies, startups and private clients, delivered at enterprise rates. Scope, architecture and pricing discussed per project.
+        </div>
+
+        <div data-reveal style="display:flex;align-items:center;gap:14px;margin:0 0 22px">
+          <span style="font:500 13px 'JetBrains Mono';color:var(--pink);text-transform:uppercase;letter-spacing:.14em;white-space:nowrap">Other work</span>
+          <span style="flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)"></span>
         </div>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px">
           <sc-for list="{{ portfolio }}" as="w" hint-placeholder-count="8">
@@ -1156,10 +1189,14 @@ class Component extends DCLogic {
     const pkg = this.state.pkg || services[3];
     const paymethods = ['PayPal','Revolut','Crypto'];
 
+    const flagship = [
+      {emoji:'🍈', badge:'Official Server', title:'Bloxfruits Trading Server', scale:'750,000+ members', blurb:'Bot development, UI/UX design and behind-the-scenes systems for one of the largest trading communities on Discord — engineering that has to hold up at massive scale.', tags:['Bot development','UI/UX design','Backend systems','Scale']},
+      {emoji:'🌊', badge:'Founding Team', title:'DigitalOcean — Official Page & Discord', scale:'20,000+ members', blurb:'Helped create and found the official DigitalOcean community page and Discord server, building the structure and systems behind a developer community for a major cloud platform.', tags:['Founded','Community architecture','Automation']},
+      {emoji:'⚡', badge:'End-to-end build', title:'ETA Games', scale:'50,000+ members', blurb:'Complete build for a 50k+ gaming community: moderation system, giveaway systems, custom bots and full UI/UX across channels — engineered to run autonomously after handover.', tags:['Moderation','Giveaways','Custom bots','UI/UX']},
+      {emoji:'🏗️', badge:'End-to-end build', title:'MCL', scale:'30,000+ members', blurb:'Full server architecture with automated moderation, giveaway tooling, custom bots and channel UI/UX — handed over completely self-running.', tags:['Architecture','Automation','Custom bots']},
+    ];
+
     const portfolio = [
-      {type:'Server Build', emoji:'⚡', bg:'linear-gradient(120deg,#ff5c96,#ffd0e0,#ff2d7e)', title:'ETA Games — 50,000+ members', blurb:'Complete end-to-end build for a 50k+ gaming community: moderation system, giveaway systems, custom bots, and full UI/UX design across channels — engineered to run autonomously.', price:'Custom', metric:'50k+', metricLabel:'members', metric2:'Autonomous', metricLabel2:'runs itself'},
-      {type:'Server Build', emoji:'🏗️', bg:'linear-gradient(120deg,#ff6aa6,#ff9dc6,#ff4d8f)', title:'MCL — 30,000+ members', blurb:'Full server architecture with automated moderation, giveaways and onboarding, plus custom channel UI/UX — handed over fully self-running.', price:'Custom', metric:'30k+', metricLabel:'members', metric2:'Autonomous', metricLabel2:'runs itself'},
-      {type:'Server Build', emoji:'🛡️', bg:'linear-gradient(120deg,#ff4d8f,#ffb3cf,#e01e66)', title:'LOCX — 30,000+ members', blurb:'Structure, automation and growth systems for a 30k+ community — custom bots, moderation and giveaway tooling designed around the mod team.', price:'Custom', metric:'30k+', metricLabel:'members', metric2:'Autonomous', metricLabel2:'runs itself'},
       {type:'Website', emoji:'🌐', bg:'linear-gradient(120deg,#ff9dc6,#ff5c96,#ffd0e0)', title:'Company website build', blurb:'A fast, modern marketing site for a growing company — responsive, animated and easy to manage.', price:'≈ $450', metric:'2 wk', metricLabel:'delivery', metric2:'100%', metricLabel2:'responsive'},
       {type:'App', emoji:'📱', bg:'linear-gradient(120deg,#ff6aa6,#ff2d7e,#ffb3cf)', title:'Custom web app', blurb:'A tailored app for a client with clean UX and solid engineering behind every screen.', price:'≈ $900', metric:'5k+', metricLabel:'users', metric2:'4.9★', metricLabel2:'user rating'},
       {type:'Game', emoji:'🎮', bg:'linear-gradient(120deg,#ff8fb8,#ff4d8f,#ff6aa6)', title:'Game & scripting project', blurb:'Gameplay systems and integrations scripted in Lua — mechanics, events and rewards.', price:'≈ $600', metric:'Lua', metricLabel:'+ more', metric2:'Live', metricLabel2:'events'},
@@ -1222,7 +1259,7 @@ class Component extends DCLogic {
       pauseRotate: ()=>{ this._paused=true; },
       resumeRotate: ()=>{ this._paused=false; },
       platformLogo, platform, platformDots,
-      stats, capabilities, skills, process, contactRows,
+      stats, capabilities, skills, process, contactRows, flagship,
       services, paymethods, portfolio, testimonials, customIdeas, socialCards,
       form:this.state.form, setName:this.set('name'), setContact:this.set('contact'), setMsg:this.set('msg'),
       pkgName: pkg.name, pkgPrice: pkg.price, pkgRate: pkg.rate,
