@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your portal — mxtei</title>
+<meta name="description" content="Your projects, logged hours and invoices.">
+<link rel="canonical" href="https://mxtei.com/portal/">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0B0A09">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@1&display=swap">
+<link rel="stylesheet" href="../assets/mx.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="../assets/portal.js" defer></script>
+<script>document.documentElement.className+=" js"</script>
+</head>
+<body data-fire-start="about">
+<canvas id="fire" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="particles" aria-hidden="true"></div>
+<div class="page">
+<header class="hdr">
+  <div class="row">
+    <a class="lock" href="../"><svg class="mark" viewBox="23 8 74 144" width="13.4" height="26.0" fill="none" role="img" aria-label="mxtei"><defs><linearGradient id="mgh" x1="60" y1="8" x2="60" y2="152" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF4D0F"/><stop offset="0.5" stop-color="#FF9A12"/><stop offset="1" stop-color="#FFD84A"/></linearGradient></defs><g fill="url(#mgh)"><path d="M60 8 L79 60 L60 43 L41 60 Z"/><path d="M60 50 L88 116 L60 94 L32 116 Z"/><path d="M60 98 L97 152 L60 134 L23 152 Z"/></g></svg><span>mxtei</span></a>
+    <nav class="nav" aria-label="Main">
+      <div class="drop">
+        <button class="dropbtn" type="button" aria-expanded="false" aria-controls="menu-work">Work<svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 L6 8 L9.5 4.5"/></svg></button>
+        <div class="menu" id="menu-work">
+          <a href="../#work">Selected work<span>Clients, servers and builds</span></a>
+          <a href="../#reviews">Testimonials<span>What clients say</span></a>
+          <a href="../#about">About me<span>Who you're hiring</span></a>
+        </div>
+      </div>
+      <div class="drop">
+        <button class="dropbtn" type="button" aria-expanded="false" aria-controls="menu-services">Services<svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 L6 8 L9.5 4.5"/></svg></button>
+        <div class="menu" id="menu-services">
+          <a href="../#services">What I do<span>Websites, apps, bots, growth</span></a>
+          <a href="../#pricing">Pricing<span>Hourly rates, scoped up front</span></a>
+          <a href="../referral/">Referral program<span>15% off for you and them</span></a>
+        </div>
+      </div>
+      <div class="drop">
+        <button class="dropbtn" type="button" aria-expanded="false" aria-controls="menu-contact">Contact<svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 L6 8 L9.5 4.5"/></svg></button>
+        <div class="menu" id="menu-contact">
+          <a href="../#contact">Get in touch<span>Start a project</span></a>
+          <a href="../socials/">Socials<span>Discord, Instagram, email</span></a>
+          <a href="../pay/">Payment<span>Invoices and ways to pay</span></a>
+          <a href="../login/">Client portal<span>Your projects, hours and invoices</span></a>
+        </div>
+      </div>
+    </nav>
+    <a class="signin" href="../login/">Log in</a>
+    <a class="pill" href="../mxreach/"><i></i>mxReach</a>
+    <button class="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  </div>
+</header>
+<div class="drawer" id="drawer">
+    <div class="dgroup"><h4>Work</h4>
+      <a href="../#work">Selected work</a>
+      <a href="../#reviews">Testimonials</a>
+      <a href="../#about">About me</a>
+    </div>
+    <div class="dgroup"><h4>Services</h4>
+      <a href="../#services">What I do</a>
+      <a href="../#pricing">Pricing</a>
+      <a href="../referral/">Referral program</a>
+    </div>
+    <div class="dgroup"><h4>Contact</h4>
+      <a href="../#contact">Get in touch</a>
+      <a href="../socials/">Socials</a>
+      <a href="../pay/">Payment</a>
+      <a href="../login/">Client portal</a>
+    </div>
+    <div class="dgroup"><h4>Product</h4>
+      <a href="../mxreach/">mxReach</a>
+    </div>
+</div>
+<main>
+<section class="sec wrap" id="portal" data-fire="about" style="padding-top:clamp(50px,9vh,100px);padding-bottom:clamp(80px,12vh,140px)">
+  <div class="phead">
+    <div>
+      <p class="eyebrow ember">Client portal</p>
+      <h1 class="h1-brand">Hello, <em class="serif" id="portal-who">…</em></h1>
+    </div>
+    <button class="btn btn-ghost" id="signout" type="button">Sign out</button>
+  </div>
+
+  <p class="formmsg" id="portal-loading">Loading your projects…</p>
+
+  <div id="portal-unconfigured" hidden>
+    <p class="callout"><b>The portal isn&rsquo;t switched on yet.</b> Once it is, everything you&rsquo;ve got running
+      with me shows up here.</p>
+  </div>
+
+  <div id="portal-error" hidden>
+    <p class="callout"><b>Couldn&rsquo;t load your data.</b> <span id="portal-error-msg"></span></p>
+  </div>
+
+  <div id="portal-empty" hidden>
+    <p class="callout"><b>Nothing linked to this address yet.</b> If you&rsquo;ve worked with me before, sign in with
+      the email I invoice you at, or <a href="../socials/">message me</a> and I&rsquo;ll link it up.</p>
+  </div>
+
+  <div id="portal-body" hidden>
+    <div class="pstats">
+      <div><b id="stat-projects">0</b><span>active projects</span></div>
+      <div><b id="stat-hours">0</b><span>hours logged</span></div>
+      <div><b id="stat-owed">—</b><span>outstanding</span></div>
+    </div>
+
+    <h2 class="h2" style="margin:56px 0 20px">Projects</h2>
+    <div class="plist" id="project-list"></div>
+
+    <h2 class="h2" style="margin:56px 0 20px">Invoices</h2>
+    <div class="plist" id="invoice-list"></div>
+
+    <p class="callout" style="margin-top:34px">Something look wrong? <a href="../socials/">Message me</a> and
+      I&rsquo;ll sort it. You can also <a href="../pay/">pay by card, PayPal, Wise, Revolut, bank or crypto</a>.</p>
+  </div>
+</section>
+</main>
+<footer class="ftr">
+  <div class="row">
+    <div class="l"><svg class="mark" viewBox="23 8 74 144" width="10.3" height="20.0" fill="#6E665F" aria-hidden="true"><path d="M60 8 L79 60 L60 43 L41 60 Z"/><path d="M60 50 L88 116 L60 94 L32 116 Z"/><path d="M60 98 L97 152 L60 134 L23 152 Z"/></svg><span>mxtei.com · freelance builds &amp; mxReach</span></div>
+    <div class="r">
+      <a href="mailto:marcellszoke@icloud.com">marcellszoke@icloud.com</a>
+      <a href="../socials/">Socials</a>
+      <a href="../pay/">Payment</a>
+      <a href="../referral/">Referral</a>
+    </div>
+  </div>
+</footer>
+</div>
+<script src="../assets/fire.js"></script>
+<script src="../assets/site.js"></script>
+<script data-goatcounter="https://mxtei.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
