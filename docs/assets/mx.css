@@ -684,3 +684,23 @@ h1,h2,h3{margin:0;font-weight:600}
 .reach-rows span{word-break:normal;overflow-wrap:anywhere}
 .socials{grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr))}
 .social .what,.social .handle{word-break:normal;overflow-wrap:anywhere}
+
+/* ---------- referral code fields ---------- */
+.reffield{display:block}
+.reffield label,.calc-ref label{display:block;font:500 12.5px var(--sans);color:var(--t55);margin-bottom:7px}
+.reffield .opt{color:var(--t50);font-weight:400}
+.calc-ref{display:block;padding:14px 16px;border:1px dashed var(--line-strong);border-radius:14px}
+.calc-ref label b{display:block;font-size:14px;font-weight:600;color:var(--cream)}
+.calc-ref label small{display:block;margin-top:2px;font-size:12.5px;color:var(--t55)}
+[data-ref-input]{width:100%;background:rgba(14,12,11,.8);color:var(--cream);
+  border:1px solid var(--line-strong);border-radius:12px;padding:12px 15px;
+  font:600 16px var(--sans);letter-spacing:.22em;
+  transition:border-color .25s ease,box-shadow .25s ease}
+[data-ref-input]::placeholder{color:var(--t50);font-weight:400;letter-spacing:.22em}
+[data-ref-input]:focus{outline:none;border-color:rgba(255,90,31,.55);box-shadow:0 0 0 3px rgba(255,90,31,.14)}
+[data-ref-input]:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+[data-ref-input].is-valid{border-color:rgba(127,209,168,.6)}
+[data-ref-input].is-invalid{border-color:rgba(255,138,107,.6)}
+.ref-status{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--t55);min-height:1em}
+.ref-status.ok{color:#7FD1A8}
+.ref-status.err{color:#FF8A6B}

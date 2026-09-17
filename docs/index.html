@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@1&display=swap">
-<link rel="stylesheet" href="assets/mx.css?v=48f53fee">
+<link rel="stylesheet" href="assets/mx.css?v=f6563b5b">
 <script>document.documentElement.className+=" js"</script>
 </head>
 <body data-fire-start="home">
@@ -238,8 +238,12 @@
           <div class="calc-tiers" data-o="tiers" role="radiogroup" aria-label="Package size"></div>
         </div>
 
-        <label class="calc-ref"><input type="checkbox" data-f="referral">
-          <span><b>I have a referral code</b><small>15% off your first invoice</small></span></label>
+        <div class="calc-ref">
+          <label for="calc-ref-code"><b>Referral code</b><small>15% off your first invoice</small></label>
+          <input id="calc-ref-code" type="text" inputmode="numeric" autocomplete="off"
+                 maxlength="7" placeholder="000 000" data-ref-input aria-describedby="calc-ref-status">
+          <p class="ref-status" id="calc-ref-status" data-ref-status role="status" aria-live="polite"></p>
+        </div>
       </div>
 
       <div class="calc-out" aria-live="polite">
@@ -312,6 +316,12 @@
         <option>Customs</option>
         <option>Something else</option>
       </select></div>
+    <div class="reffield">
+      <label for="c-ref">Referral code <span class="opt">(optional)</span></label>
+      <input id="c-ref" name="referral_code" type="text" inputmode="numeric" autocomplete="off"
+             maxlength="7" placeholder="000 000" data-ref-input>
+      <p class="ref-status" data-ref-status role="status" aria-live="polite"></p>
+    </div>
     <div><label for="c-msg">Tell me about it</label><textarea id="c-msg" name="message" placeholder="The idea, the deadline, the budget."></textarea></div>
     <button class="send" type="submit" data-label="Send message">Send message</button>
     <p class="formmsg" role="status" aria-live="polite"></p>
@@ -359,7 +369,7 @@
 </div>
 <script src="assets/fire.js?v=2b956d35"></script>
 <script src="assets/pricing.js?v=8d2bce02"></script>
-<script src="assets/site.js?v=9b3b065c"></script>
+<script src="assets/site.js?v=79783d5f"></script>
 <script data-goatcounter="https://mxtei.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 </body>

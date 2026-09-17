@@ -150,7 +150,7 @@
   var DONE = {
     waitlist: ["You're on the list — check your inbox for a confirmation.", "You're on the list"],
     invoice:  ["Got it — I'll send the invoice or payment link today.", "Request sent"],
-    referral: ["Done — your referral code is on its way today.", "Code on its way"],
+    referral: ["Done — your six-digit code is on its way to your inbox.", "Code sent"],
     contact:  ["Message sent — I'll get back to you shortly.", "Sent"]
   };
 
@@ -160,6 +160,7 @@
       headers: { Accept: "application/json", "Content-Type": "application/json" },
       body: JSON.stringify({
         name: data.name || "", contact: data.contact, service: data.service || "",
+        referral_code: data.referral_code || "",
         message: data.message || "(" + kind + " — no message)",
         _subject: (SUBJECT[kind] || "New message") + " — " + (data.name || "website")
       })
@@ -173,6 +174,7 @@
                  Authorization: "Bearer " + SUPABASE_ANON },
       body: JSON.stringify({ kind: kind, name: data.name || "", contact: data.contact,
         service: data.service || "", message: data.message || "",
+        referral_code: data.referral_code || "",
         company_website: data.company_website || "" })
     });
   }
@@ -206,7 +208,13 @@
 
         viaFunction(kind, data).then(function (res) {
           if (res.status === 429) { var rate = new Error("rate"); rate.rate = true; throw rate; }
-          if (res.status === 400) { var bad = new Error("invalid"); bad.invalid = true; throw bad; }
+          if (res.status === 400) {
+            return res.json().catch(function () { return {}; }).then(function (j) {
+              var bad = new Error("invalid");
+              if (j && j.error === "email_required") bad.emailRequired = true; else bad.invalid = true;
+              throw bad;
+            });
+          }
           if (!res.ok) return viaFormspree(kind, data);            // not deployed / server error
           return res.json().then(function (j) {
             if (j && j.emailed === false) return viaFormspree(kind, data).catch(function () {});
@@ -221,6 +229,8 @@
         }).catch(function (err) {
           if (err && err.rate) {
             say("That's a lot of messages in a short time — try again in a few minutes.", "err");
+          } else if (err && err.emailRequired) {
+            say("Your code is sent by email, so I need an email address here.", "err");
           } else if (err && err.invalid) {
             say("Something in the form wasn't accepted — check your email or Discord and try again.", "err");
           } else {
@@ -333,6 +343,89 @@
     });
   }
 
+  /* ---- referral codes ---------------------------------------------------
+     Six digits. A ?ref=482917 link fills the code in automatically. Every code
+     box on the page stays in sync, and the contact form and calculator both
+     react to whether the code checks out.
+     States: valid | invalid | unknown (couldn't reach the checker) | empty. */
+  var refState = { code: "", state: "empty" };
+  var refCache = {};
+  var refTimer = null;
+
+  function refBoxes() { return [].slice.call(document.querySelectorAll("[data-ref-input]")); }
+
+  function paintRef(active) {
+    var msg = { valid: ["Code applied — 15% off your first invoice.", "ok"],
+                invalid: ["I can’t find that code. Check the six digits?", "err"],
+                unknown: ["Saved — I’ll confirm it when I reply.", ""],
+                checking: ["Checking…", ""],
+                empty: ["", ""] }[refState.state] || ["", ""];
+    var pretty = refState.code ? refState.code.replace(/(\d{3})(\d{3})/, "$1 $2") : "";
+    refBoxes().forEach(function (box) {
+      // The box being typed in keeps a partial code (just stripped of non-digits);
+      // every other box mirrors the finished code, or clears with it.
+      var shown = box === active
+        ? (refState.code ? pretty : String(box.value || "").replace(/\D/g, "").slice(0, 6))
+        : pretty;
+      if (box.value !== shown) box.value = shown;
+      box.classList.toggle("is-valid", refState.state === "valid");
+      box.classList.toggle("is-invalid", refState.state === "invalid");
+      var status = box.parentElement.querySelector("[data-ref-status]");
+      if (status) { status.textContent = msg[0]; status.className = "ref-status" + (msg[1] ? " " + msg[1] : ""); }
+    });
+    document.dispatchEvent(new CustomEvent("mx:ref", { detail: { code: refState.code, state: refState.state } }));
+  }
+
+  function checkRef(code) {
+    if (refCache[code]) { refState = { code: code, state: refCache[code] }; paintRef(); return; }
+    fetch(CONTACT_FN, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON,
+                 Authorization: "Bearer " + SUPABASE_ANON },
+      body: JSON.stringify({ action: "check", code: code })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("check " + r.status);
+      return r.json();
+    }).then(function (j) {
+      var state = j && j.valid ? "valid" : "invalid";
+      refCache[code] = state;
+      if (refState.code === code) { refState.state = state; paintRef(); }
+    }).catch(function () {
+      // Checker unreachable (not deployed yet, offline). Keep the code and let
+      // Marcell confirm it rather than rejecting something that may be fine.
+      if (refState.code === code) { refState.state = "unknown"; paintRef(); }
+    });
+  }
+
+  function setRef(raw, active) {
+    var code = String(raw || "").replace(/\D/g, "").slice(0, 6);
+    refState = { code: code, state: code.length === 6 ? "checking" : "empty" };
+    paintRef(active);
+    clearTimeout(refTimer);
+    if (code.length === 6) refTimer = setTimeout(function () { checkRef(code); }, 250);
+  }
+
+  function referralCodes() {
+    var boxes = refBoxes();
+    var fromUrl = "";
+    try { fromUrl = new URLSearchParams(location.search).get("ref") || ""; } catch (e) { /* older browser */ }
+    var stored = "";
+    try { stored = sessionStorage.getItem("mx_ref") || ""; } catch (e) { /* private mode */ }
+
+    boxes.forEach(function (box) {
+      box.addEventListener("input", function () {
+        setRef(box.value, box);
+        try { sessionStorage.setItem("mx_ref", refState.code); } catch (e) { /* private mode */ }
+      });
+    });
+
+    var initial = String(fromUrl || stored).replace(/\D/g, "").slice(0, 6);
+    if (initial.length === 6) {
+      setRef(initial);
+      try { sessionStorage.setItem("mx_ref", initial); } catch (e) { /* private mode */ }
+    }
+  }
+
   /* ---- pricing calculator ----------------------------------------------
      Freelance work only: hourly or fixed-price. Subscriptions are mxReach's and
      live on its own page, never in here.
@@ -359,7 +452,7 @@
     if (!P) return;
     Array.prototype.forEach.call(document.querySelectorAll("[data-calc]"), function (root) {
       var q = function (s) { return root.querySelector(s); };
-      var st = { mode: "hourly", svc: 0, hours: 10, tier: 1, referral: false };
+      var st = { mode: "hourly", svc: 0, hours: 10, tier: 1 };
       var sel = q('[data-f="service"]');
       var tabs = [].slice.call(root.querySelectorAll("[data-mode]"));
       var reqBtn = q("[data-calc-request]");
@@ -445,11 +538,15 @@
 
         var refField = q(".calc-ref");
         if (refField) refField.hidden = talk;      // nothing to discount until it's scoped
-        if (!talk && st.referral) {
+        var refApplies = !talk && (refState.state === "valid" || refState.state === "unknown");
+        if (refApplies) {
           var save = total * P.referral.discount;
-          lines.push(["Referral — " + pct(P.referral.discount) + " off first invoice", "−" + money(save), true]);
+          var pending = refState.state === "unknown" ? " (to confirm)" : "";
+          lines.push(["Referral " + refState.code.replace(/(\d{3})(\d{3})/, "$1 $2") +
+                      " — " + pct(P.referral.discount) + " off first invoice" + pending,
+                      "−" + money(save), true]);
           total -= save;
-          summary += ", with a referral code";
+          summary += ", referral code " + refState.code;
         }
 
         q('[data-o="lines"]').innerHTML = lines.map(function (l) {
@@ -493,7 +590,6 @@
       root.addEventListener("change", function (e) {
         var t = e.target, f = t.getAttribute && t.getAttribute("data-f");
         if (f === "service") { st.svc = Number(t.value); render(); }
-        else if (f === "referral") { st.referral = t.checked; render(); }
         else if (t.type === "radio") { st.tier = Number(t.value); render(); }
       });
 
@@ -512,6 +608,8 @@
           try { sessionStorage.setItem("mx_quote", JSON.stringify(quote)); } catch (err) { /* private mode */ }
         }
       });
+
+      document.addEventListener("mx:ref", render);
 
       fillServices();
       render();
@@ -565,6 +663,7 @@
   function init() {
     nav();
     serviceLinks();
+    referralCodes();
     calculators();
     billingToggles();
     prefillQuote();

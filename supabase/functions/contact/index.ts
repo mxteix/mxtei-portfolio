@@ -26,6 +26,13 @@ declare const Deno: any;
 export type Kind = "contact" | "waitlist" | "invoice" | "referral";
 export interface Submission {
   kind: Kind; name: string; contact: string; service: string; message: string; honeypot: string;
+  referral_code: string;   // a code the visitor is using, not one they own
+}
+
+/** What the notification email should mention about referral codes. */
+export interface NotifyInfo {
+  issued?: string;
+  used?: { code: string; valid: boolean; ownerName?: string; self?: boolean };
 }
 
 const SITE = "https://mxtei.com";
@@ -53,6 +60,40 @@ export function safeFirstName(name: string): string {
 
 export function isEmail(v: string): boolean {
   return /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']{2,}$/.test(v);
+}
+
+/* ---------------------------------------------------------- referral codes --
+   Six digits, emailed to the person who asks. One code per email address:
+   asking again returns the same code, so codes can't be farmed. */
+
+/** "482 917" or " 482917 " -> "482917"; anything else -> "". */
+export function normalizeCode(v: unknown): string {
+  const digits = String(v ?? "").replace(/\D/g, "");
+  return digits.length === 6 ? digits : "";
+}
+
+export function formatCode(code: string): string {
+  return code.slice(0, 3) + " " + code.slice(3);
+}
+
+/** Reject codes a person would guess: all one digit, or a run like 123456. */
+export function isGuessable(code: string): boolean {
+  if (/^(\d)\1{5}$/.test(code)) return true;
+  const n = code.split("").map(Number);
+  const run = (step: number) => n.every((d, i) => i === 0 || d === (n[i - 1] + step + 10) % 10);
+  return run(1) || run(-1);
+}
+
+/** Uniform over 000000-999999 (rejection sampling, so no modulo bias). */
+export function generateCode(): string {
+  const buf = new Uint32Array(1);
+  const limit = Math.floor(4294967296 / 1000000) * 1000000;
+  for (;;) {
+    crypto.getRandomValues(buf);
+    if (buf[0] >= limit) continue;
+    const code = String(buf[0] % 1000000).padStart(6, "0");
+    if (!isGuessable(code)) return code;
+  }
 }
 
 interface Layout {
@@ -159,15 +200,26 @@ function detailRow(label: string, valueHtml: string): string {
 }
 
 /** Email to Marcell. User content is escaped; nothing here reaches the visitor. */
-export function notificationEmail(s: Submission, at: Date) {
+export function notificationEmail(s: Submission, at: Date, info: NotifyInfo = {}) {
   const k = KIND[s.kind];
   const who = s.name || s.contact;
   const contactHtml = isEmail(s.contact)
     ? `<a href="mailto:${esc(s.contact)}" style="color:#C2410C;">${esc(s.contact)}</a>` : esc(s.contact);
+  let codeRow = "";
+  if (info.used) {
+    const u = info.used;
+    codeRow = detailRow("Referral code", u.self
+      ? `<b style="color:#B45309;">${esc(formatCode(u.code))} &mdash; this is their own code</b>`
+      : u.valid
+        ? `<b>${esc(formatCode(u.code))}</b> &mdash; valid${u.ownerName ? ", from " + esc(u.ownerName) : ""}`
+        : `${esc(formatCode(u.code))} &mdash; <b style="color:#B45309;">not found</b>`);
+  }
+  if (info.issued) codeRow += detailRow("Code issued", "<b>" + esc(formatCode(info.issued)) + "</b>");
   const rows = [
     s.name ? detailRow("Name", esc(s.name)) : "",
     detailRow("Contact", contactHtml),
     s.service ? detailRow("Service", esc(s.service)) : "",
+    codeRow,
     detailRow("Received", esc(at.toUTCString())),
   ].join("");
   const message = s.message
@@ -238,6 +290,42 @@ export function confirmationEmail(s: Submission) {
   return { subject: c.subject, html, text };
 }
 
+/** The code itself, emailed to whoever asked for it. Never shown on the site,
+ *  so receiving it proves they own the address. */
+export function referralCodeEmail(s: Submission, code: string) {
+  const first = safeFirstName(s.name);
+  const g = first ? `, ${esc(first)}` : "";
+  const link = SITE + "/?ref=" + code + "#contact";
+  const digits = code.split("").map(function (d) {
+    return `<td style="padding:0 4px;"><div style="width:46px;height:58px;line-height:58px;text-align:center;`
+      + `background:#F7F4F0;border:1px solid #E7DFD6;border-radius:10px;font-family:${FONT};`
+      + `font-size:28px;font-weight:700;color:#0B0A09;">${d}</div></td>`;
+  }).join("");
+
+  const html = layout({
+    title: "Your mxtei referral code",
+    preheader: "Your referral code is " + formatCode(code) + ". Share it and you both save 15%.",
+    eyebrow: "Referral program",
+    heading: "Your referral code",
+    bodyHtml:
+      para(`Thanks${g}. Here&rsquo;s your code &mdash; it&rsquo;s yours, it doesn&rsquo;t expire, and you can share it as often as you like.`)
+      + `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 10px;"><tr>${digits}</tr></table>`
+      + `<p style="margin:0 0 20px;font-size:13px;color:#736A63;font-family:${FONT};">Or share this link, which fills the code in for them:<br>`
+      + `<a href="${link}" style="color:#C2410C;word-break:break-all;">mxtei.com/?ref=${code}</a></p>`
+      + para(`<b>They get 15% off their first invoice.</b> They enter the code before we agree scope.`)
+      + para(`<b>You get 15% credit on your next invoice</b>, once theirs is paid.`)
+      + button(SITE + "/referral/#terms", "Read the terms"),
+    footnote: `You&rsquo;re receiving this because this address requested a referral code on mxtei.com. Asking again sends you this same code.`,
+  });
+  const text = [
+    "Your mxtei referral code", "", formatCode(code), "",
+    "Share this link, which fills it in for them:", link, "",
+    "They get 15% off their first invoice. You get 15% credit on your next one, once theirs is paid.",
+    "Terms: " + SITE + "/referral/#terms", "", "— Marcell, mxtei.com",
+  ].join("\n");
+  return { subject: "Your mxtei referral code: " + formatCode(code), html, text };
+}
+
 /* ================================================================ handler === */
 
 export function validate(b: Record<string, unknown> | null): { value: Submission } | { error: string } {
@@ -249,6 +337,7 @@ export function validate(b: Record<string, unknown> | null): { value: Submission
   return { value: {
     kind: kind as Kind, name: clip(b?.name, 80), contact, service: clip(b?.service, 80),
     message: clip(b?.message, 5000), honeypot: clip(b?.company_website, 200),
+    referral_code: normalizeCode(b?.referral_code),
   } };
 }
 
@@ -290,10 +379,70 @@ async function store(s: Submission, ipHash: string | null): Promise<string> {
     method: "POST",
     headers: { ...dbHeaders(), "Content-Type": "application/json", Prefer: "return=representation" },
     body: JSON.stringify({ kind: s.kind, name: s.name || null, contact: s.contact,
-      service: s.service || null, message: s.message || null, ip_hash: ipHash }),
+      service: s.service || null, message: s.message || null, ip_hash: ipHash,
+      referral_code: s.referral_code || null }),
   });
   if (!r.ok) throw new Error(`store failed ${r.status} ${await r.text()}`);
   return (await r.json())[0].id;
+}
+
+interface CodeRow { code: string; owner_email: string; owner_name: string | null }
+
+async function lookupCode(code: string): Promise<CodeRow | null> {
+  const r = await fetch(`${env("SUPABASE_URL")}/rest/v1/referral_codes?select=code,owner_email,owner_name&code=eq.${encodeURIComponent(code)}&limit=1`,
+    { headers: dbHeaders() });
+  if (!r.ok) return null;
+  const rows = await r.json();
+  return rows.length ? rows[0] : null;
+}
+
+/** The code for this email address, creating one the first time. Retries on the
+ *  rare collision with an existing code. */
+async function ensureCode(email: string, name: string): Promise<string | null> {
+  const owner = email.toLowerCase();
+  const url = env("SUPABASE_URL");
+  const existing = await fetch(`${url}/rest/v1/referral_codes?select=code&owner_email=eq.${encodeURIComponent(owner)}&limit=1`,
+    { headers: dbHeaders() });
+  if (existing.ok) {
+    const rows = await existing.json();
+    if (rows.length) return rows[0].code;
+  }
+  for (let i = 0; i < 6; i++) {
+    const code = generateCode();
+    const r = await fetch(`${url}/rest/v1/referral_codes`, {
+      method: "POST",
+      headers: { ...dbHeaders(), "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({ code, owner_email: owner, owner_name: name || null }),
+    });
+    if (r.ok) return code;
+    if (r.status === 409) {
+      // Either the code or the owner already exists; if the owner, use theirs.
+      const again = await fetch(`${url}/rest/v1/referral_codes?select=code&owner_email=eq.${encodeURIComponent(owner)}&limit=1`,
+        { headers: dbHeaders() });
+      if (again.ok) { const rows = await again.json(); if (rows.length) return rows[0].code; }
+      continue;
+    }
+    console.error("code insert", r.status, await r.text());
+    return null;
+  }
+  return null;
+}
+
+async function countChecks(minutes: number, ipHash: string): Promise<number> {
+  const p = new URLSearchParams({ select: "id", ip_hash: `eq.${ipHash}`,
+    created_at: `gte.${new Date(Date.now() - minutes * 60000).toISOString()}` });
+  const r = await fetch(`${env("SUPABASE_URL")}/rest/v1/code_checks?${p}`,
+    { headers: { ...dbHeaders(), Prefer: "count=exact", Range: "0-0" } });
+  const total = Number((r.headers.get("content-range") ?? "").split("/")[1]);
+  return Number.isFinite(total) ? total : 0;
+}
+
+async function logCheck(ipHash: string | null): Promise<void> {
+  await fetch(`${env("SUPABASE_URL")}/rest/v1/code_checks`, {
+    method: "POST",
+    headers: { ...dbHeaders(), "Content-Type": "application/json", Prefer: "return=minimal" },
+    body: JSON.stringify({ ip_hash: ipHash }),
+  });
 }
 
 async function markEmailed(id: string): Promise<void> {
@@ -323,6 +472,20 @@ async function handle(req: Request): Promise<Response> {
 
   let body: Record<string, unknown> | null = null;
   try { body = await req.json(); } catch { return json({ error: "json" }, 400, h); }
+
+  const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
+  const ipHash = ip ? await sha256(env("IP_SALT") + ip) : null;
+
+  // Is this code real? Answers yes/no only — never who owns it. Rate limited so
+  // nobody can work through the million possible codes.
+  if (body && body.action === "check") {
+    const code = normalizeCode(body.code);
+    if (!code) return json({ valid: false }, 200, h);
+    if (ipHash && await countChecks(10, ipHash) >= 20) return json({ error: "rate" }, 429, h);
+    await logCheck(ipHash);
+    return json({ valid: !!(await lookupCode(code)) }, 200, h);
+  }
+
   const v = validate(body);
   if ("error" in v) return json(v, 400, h);
   const s = v.value;
@@ -330,18 +493,35 @@ async function handle(req: Request): Promise<Response> {
   // Bots fill the hidden field. Tell them it worked and do nothing.
   if (s.honeypot) return json({ ok: true, emailed: true }, 200, h);
 
-  const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
-  const ipHash = ip ? await sha256(env("IP_SALT") + ip) : null;
+  // A referral code can only be delivered by email, so we need one.
+  if (s.kind === "referral" && !isEmail(s.contact)) return json({ error: "email_required" }, 400, h);
+
   if (ipHash && await countSince(10, ipHash) >= 5) return json({ error: "rate" }, 429, h);
 
   const id = await store(s, ipHash);       // stored before any email is attempted
+
+  const info: NotifyInfo = {};
+  if (s.kind === "referral") {
+    const issued = await ensureCode(s.contact, s.name);
+    if (issued) info.issued = issued;
+  }
+  if (s.referral_code) {
+    const row = await lookupCode(s.referral_code);
+    info.used = {
+      code: s.referral_code, valid: !!row, ownerName: row?.owner_name ?? undefined,
+      self: !!row && row.owner_email.toLowerCase() === s.contact.toLowerCase(),
+    };
+  }
 
   let emailed = false;
   const cap = Number(env("DAILY_CAP", "45")) || 45;
   if (env("RESEND_API_KEY") && await countSince(1440) <= cap) {
     const notifyTo = env("NOTIFY_EMAIL", "marcellszoke@icloud.com");
-    emailed = await send(notifyTo, notificationEmail(s, new Date()), isEmail(s.contact) ? s.contact : undefined);
-    if (isEmail(s.contact)) await send(s.contact, confirmationEmail(s), notifyTo);  // replies reach Marcell
+    emailed = await send(notifyTo, notificationEmail(s, new Date(), info), isEmail(s.contact) ? s.contact : undefined);
+    if (isEmail(s.contact)) {
+      const toVisitor = info.issued ? referralCodeEmail(s, info.issued) : confirmationEmail(s);
+      await send(s.contact, toVisitor, notifyTo);   // replies reach Marcell
+    }
     if (emailed) await markEmailed(id);
   }
   // emailed:false tells the site to also notify through Formspree, so a lead

@@ -41,6 +41,7 @@ keep using Formspree automatically.
 **Store every form submission**
 
 1. **SQL Editor → New query** → paste `supabase/migrations/002_form_submissions.sql` → **Run**.
+   Then repeat with `supabase/migrations/003_referral_codes.sql` (referral codes).
 
 **Deploy the email function**
 
@@ -102,3 +103,8 @@ check it's named exactly `contact` and that the secrets are saved.
   so they stay matched. Re-paste whatever changed.
 - **mxReach waitlist.** Everyone who joins is in `form_submissions` where
   `kind = 'waitlist'`.
+- **Referral codes.** Every code issued is in `referral_codes` (one per email address).
+  Codes are only ever delivered by email, never shown on the site. If you ever need to look
+  one up, it's in that table.
+- **Re-deploying.** If you change `supabase/functions/contact/index.ts`, paste it into the
+  dashboard editor again and hit Deploy. Secrets stay as they are.
