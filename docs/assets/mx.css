@@ -590,6 +590,9 @@ h1,h2,h3{margin:0;font-weight:600}
   background:rgba(241,236,230,.05);border:1px solid var(--line);color:var(--t80);
   transition:color .3s ease,border-color .3s ease,background .3s ease}
 .icon svg{display:block;width:19px;height:19px}
+/* The contact rows style every inner span as a text line (display:block, margin-top).
+   The icon tile is a span too, so pin its layout at higher specificity. */
+.reach-rows .icon,.social .icon{display:grid;place-items:center;margin:0;line-height:0}
 .reach-rows a:hover .icon,.social:hover .icon{color:var(--spark);
   border-color:rgba(255,90,31,.4);background:rgba(255,90,31,.08)}
 
@@ -674,3 +677,10 @@ h1,h2,h3{margin:0;font-weight:600}
 .billing button[aria-pressed="true"]{background:var(--ember);color:var(--ink);font-weight:600}
 .billing button[aria-pressed="true"] .calc-flag{background:rgba(11,10,9,.18);color:var(--ink)}
 .plan .price .price-sub{flex-basis:100%;margin-top:4px;font-size:13px;color:var(--t55)}
+
+/* Contact grids: four cards read as a balanced 2x2, never a 3+1 with an orphan.
+   Addresses only wrap when they truly can't fit (no mid-word "icloud.co / m"). */
+.reach-rows{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));max-width:720px}
+.reach-rows span{word-break:normal;overflow-wrap:anywhere}
+.socials{grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr))}
+.social .what,.social .handle{word-break:normal;overflow-wrap:anywhere}
