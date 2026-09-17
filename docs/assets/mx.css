@@ -654,3 +654,10 @@ h1,h2,h3{margin:0;font-weight:600}
 .calc-actions{display:flex;flex-wrap:wrap;gap:10px}
 .calc-actions .btn{padding:12px 22px;font-size:14px}
 .calc-aside{margin:16px 0 0;font-size:13px;color:var(--t55)}
+
+/* S tier: companies, no price. Marked as a distinct option rather than a bigger A. */
+.calc-tier.is-s{border-style:dashed;border-color:rgba(255,176,103,.35)}
+.calc-tier.is-s .calc-tier-top em{color:var(--spark)}
+.calc-tier.is-s .calc-tier-top b{font-size:14px;color:var(--spark)}
+.calc-tier.is-s:has(input:checked){border-style:solid;border-color:rgba(255,176,103,.7);background:rgba(255,176,103,.07)}
+.calc.is-talk .calc-total b{font-size:clamp(26px,3.4vw,34px);color:var(--spark)}

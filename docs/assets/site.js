@@ -334,11 +334,14 @@
   }
 
   /* ---- pricing calculator ----------------------------------------------
-     Reads window.MX_PRICING (assets/pricing.js). Three ways to work: hourly,
-     fixed package tiers, and monthly retainers (10% off for 3+ months). The
-     referral toggle takes 15% off the first invoice, which on a retainer is
-     the first month. "Request this" hands the estimate to the contact form,
-     on this page or, via sessionStorage, on the homepage. */
+     Reads window.MX_PRICING (assets/pricing.js). Three ways to work:
+       hourly    one rate per service
+       package   tiers C/B/A per service, plus S for companies
+       monthly   retainer plans C/B/A (hours per month) plus S; 10% off for 3+ months
+     S tiers carry no price: they route to a personal conversation instead.
+     The referral toggle takes 15% off the first invoice (first month on a
+     retainer). "Request this" hands the estimate to the contact form, on this
+     page or, via sessionStorage, on the homepage. */
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -357,9 +360,10 @@
     if (!P) return;
     Array.prototype.forEach.call(document.querySelectorAll("[data-calc]"), function (root) {
       var q = function (s) { return root.querySelector(s); };
-      var st = { mode: "hourly", svc: 0, hours: 10, tier: 1, mhours: 20, months: 3, referral: false };
+      var st = { mode: "hourly", svc: 0, hours: 10, tier: 1, rtier: 1, months: 3, referral: false };
       var sel = q('[data-f="service"]');
       var tabs = [].slice.call(root.querySelectorAll("[data-mode]"));
+      var reqBtn = q("[data-calc-request]");
 
       function list() { return st.mode === "package" ? P.packages : P.hourly; }
 
@@ -384,21 +388,22 @@
         render();
       }
 
-      function renderTiers(item) {
-        var box = q('[data-o="tiers"]');
-        if (box.getAttribute("data-for") !== item.id) {
-          box.setAttribute("data-for", item.id);
+      /* Tier cards. `key` decides when the cards must be rebuilt (a different
+         service, or a different hourly rate for retainer prices). */
+      function renderTiers(box, key, tiers, selected, priceOf) {
+        if (box.getAttribute("data-for") !== key) {
+          box.setAttribute("data-for", key);
           var group = "tier-" + Math.random().toString(36).slice(2, 8);
-          box.innerHTML = item.tiers.map(function (t, i) {
-            return '<label class="calc-tier"><input type="radio" name="' + group + '" value="' + i + '">' +
-              '<span class="calc-tier-top"><em>Tier ' + esc(t.tier) + "</em><b>" +
-              (t.from ? "from " : "") + money(t.price) + "</b></span>" +
+          box.innerHTML = tiers.map(function (t, i) {
+            return '<label class="calc-tier' + (t.talk ? " is-s" : "") + '">' +
+              '<input type="radio" name="' + group + '" value="' + i + '">' +
+              '<span class="calc-tier-top"><em>Tier ' + esc(t.tier) + "</em><b>" + esc(priceOf(t)) + "</b></span>" +
               '<span class="calc-tier-name">' + esc(t.name) + "</span>" +
               '<span class="calc-tier-blurb">' + esc(t.blurb) + "</span></label>";
           }).join("");
         }
         Array.prototype.forEach.call(box.querySelectorAll("input"), function (r) {
-          r.checked = Number(r.value) === st.tier;
+          r.checked = Number(r.value) === selected;
         });
       }
 
@@ -413,7 +418,7 @@
         });
 
         var item = list()[st.svc];
-        var lines = [], total = 0, from = false, note = "", first = 0, form = "", summary = "";
+        var lines = [], total = 0, from = false, talk = false, note = "", first = 0, form = "", summary = "";
 
         if (st.mode === "hourly") {
           total = st.hours * item.rate;
@@ -422,32 +427,60 @@
           note = "Estimate. The hours are agreed before work starts and billed against what’s logged.";
           form = item.form;
           summary = item.name + " — " + st.hours + " hours at " + money(item.rate) + "/h";
+
         } else if (st.mode === "package") {
-          renderTiers(item);
+          renderTiers(q('[data-o="tiers"]'), item.id, item.tiers, st.tier, function (t) {
+            return t.talk ? "Let’s talk" : (t.from ? "from " : "") + money(t.price);
+          });
           var t = item.tiers[st.tier] || item.tiers[0];
-          total = t.price; first = total; from = t.from;
-          lines.push(["Tier " + t.tier + " · " + t.name, (from ? "from " : "") + money(total)]);
-          note = from ? "Starting price. The final quote depends on scope, and I confirm it before starting."
-                      : "Fixed price for this scope, confirmed before I start.";
           form = t.form;
-          summary = item.name + " — Tier " + t.tier + " (" + t.name + "), " + (from ? "from " : "") + money(total);
+          if (t.talk) {
+            talk = true;
+            lines.push(["Tier S · " + t.name, "Let’s talk"]);
+            summary = item.name + " — Tier S (company)";
+          } else {
+            total = t.price; first = total; from = t.from;
+            lines.push(["Tier " + t.tier + " · " + t.name, (from ? "from " : "") + money(total)]);
+            note = from ? "Starting price. The final quote depends on scope, and I confirm it before starting."
+                        : "Fixed price for this scope, confirmed before I start.";
+            summary = item.name + " — Tier " + t.tier + " (" + t.name + "), " + (from ? "from " : "") + money(total);
+          }
+
         } else {
-          var monthly = st.mhours * item.rate;
-          var gross = monthly * st.months;
-          var disc = st.months >= P.retainer.minMonths ? gross * P.retainer.discount : 0;
-          total = gross - disc;
-          first = total / st.months;
-          lines.push([st.mhours + " h/month × " + money(item.rate) + "/h", money(monthly) + "/mo"]);
-          lines.push(["× " + st.months + (st.months === 1 ? " month" : " months"), money(gross)]);
-          if (disc) lines.push(["Retainer discount (" + pct(P.retainer.discount) + ")", "−" + money(disc), true]);
-          note = "Billed monthly: " + money(first) + " a month." + (disc ? "" :
-            " Commit to " + P.retainer.minMonths + "+ months to save " + pct(P.retainer.discount) + ".");
+          renderTiers(q('[data-o="rtiers"]'), "r-" + item.id + "-" + item.rate, P.retainerTiers, st.rtier, function (r) {
+            return r.talk ? "Let’s talk" : money(r.hours * item.rate) + "/mo";
+          });
+          var plan = P.retainerTiers[st.rtier] || P.retainerTiers[0];
           form = item.form;
-          summary = item.name + " retainer — " + st.mhours + " h/month for " + st.months +
-            (st.months === 1 ? " month" : " months") + (disc ? " (" + pct(P.retainer.discount) + " retainer discount)" : "");
+          if (plan.talk) {
+            talk = true;
+            lines.push(["Tier S · " + plan.name + " retainer", "Let’s talk"]);
+            summary = item.name + " retainer — Tier S (company)";
+          } else {
+            var monthly = plan.hours * item.rate;
+            var gross = monthly * st.months;
+            var disc = st.months >= P.retainer.minMonths ? gross * P.retainer.discount : 0;
+            total = gross - disc;
+            first = total / st.months;
+            lines.push(["Tier " + plan.tier + " · " + plan.name + " — " + plan.hours + " h/month", money(monthly) + "/mo"]);
+            lines.push(["× " + st.months + (st.months === 1 ? " month" : " months"), money(gross)]);
+            if (disc) lines.push(["Retainer discount (" + pct(P.retainer.discount) + ")", "−" + money(disc), true]);
+            note = "Billed monthly: " + money(first) + " a month." + (disc ? "" :
+              " Commit to " + P.retainer.minMonths + "+ months to save " + pct(P.retainer.discount) + ".");
+            summary = item.name + " retainer — Tier " + plan.tier + " (" + plan.name + ", " + plan.hours +
+              " h/month) for " + st.months + (st.months === 1 ? " month" : " months") +
+              (disc ? " (" + pct(P.retainer.discount) + " retainer discount)" : "");
+          }
         }
 
-        if (st.referral) {
+        var monthsField = q("[data-months]");
+        if (monthsField) monthsField.hidden = st.mode !== "monthly" || talk;
+        var refField = q(".calc-ref");
+        if (refField) refField.hidden = talk;       // nothing to discount until it's scoped
+
+        if (talk) {
+          note = "For companies we scope the work together first. Send me a message and I’ll reply to you personally.";
+        } else if (st.referral) {
           var save = first * P.referral.discount;
           var what = st.mode === "monthly" ? "month" : "invoice";
           lines.push(["Referral — " + pct(P.referral.discount) + " off first " + what, "−" + money(save), true]);
@@ -460,16 +493,19 @@
           return '<div class="calc-line' + (l[2] ? " is-save" : "") + '"><span>' + esc(l[0]) +
                  "</span><b>" + esc(l[1]) + "</b></div>";
         }).join("");
-        q('[data-o="label"]').textContent = st.mode === "monthly" ? "Total for the term" : "Estimated total";
-        q('[data-o="total"]').textContent = (from ? "from " : "") + money(total);
+        q('[data-o="label"]').textContent = talk ? "Price" : (st.mode === "monthly" ? "Total for the term" : "Estimated total");
+        q('[data-o="total"]').textContent = talk ? "Let’s talk" : (from ? "from " : "") + money(total);
         q('[data-o="note"]').textContent = note;
         q('[data-o="hours"]').textContent = st.hours;
-        q('[data-o="mhours"]').textContent = st.mhours;
         q('[data-o="months"]').textContent = st.months;
+        root.classList.toggle("is-talk", talk);
+        if (reqBtn) reqBtn.textContent = talk ? "Talk to me" : "Request this";
 
         root._quote = {
           service: form,
-          text: "Calculator estimate: " + summary + "\nEstimated total: " + (from ? "from " : "") + money(total) + "\n\n"
+          text: talk
+            ? "Company enquiry: " + summary + ". I'd like to talk about scope and pricing.\n\n"
+            : "Calculator estimate: " + summary + "\nEstimated total: " + (from ? "from " : "") + money(total) + "\n\n"
         };
       }
 
@@ -489,7 +525,6 @@
       root.addEventListener("input", function (e) {
         var f = e.target.getAttribute && e.target.getAttribute("data-f");
         if (f === "hours") st.hours = Number(e.target.value);
-        else if (f === "mhours") st.mhours = Number(e.target.value);
         else if (f === "months") st.months = Number(e.target.value);
         else return;
         render();
@@ -498,11 +533,14 @@
         var t = e.target, f = t.getAttribute && t.getAttribute("data-f");
         if (f === "service") { st.svc = Number(t.value); render(); }
         else if (f === "referral") { st.referral = t.checked; render(); }
-        else if (t.type === "radio") { st.tier = Number(t.value); render(); }
+        else if (t.type === "radio") {
+          if (t.closest('[data-o="rtiers"]')) st.rtier = Number(t.value);
+          else st.tier = Number(t.value);
+          render();
+        }
       });
 
-      var req = q("[data-calc-request]");
-      if (req) req.addEventListener("click", function () {
+      if (reqBtn) reqBtn.addEventListener("click", function () {
         var quote = root._quote;
         if (!quote) return;
         var fsel = document.getElementById("c-service"), msg = document.getElementById("c-msg");
