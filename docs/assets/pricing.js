@@ -2,43 +2,9 @@
    same numbers; change a price here AND on the homepage service cards. */
 window.MX_PRICING = {
   "currency": "USD",
-  "retainer": {
-    "minMonths": 3,
-    "discount": 0.1
-  },
   "referral": {
     "discount": 0.15
   },
-  "retainerTiers": [
-    {
-      "tier": "C",
-      "name": "Light",
-      "hours": 10,
-      "talk": false,
-      "blurb": "Ongoing small tasks, fixes and check-ins."
-    },
-    {
-      "tier": "B",
-      "name": "Standard",
-      "hours": 20,
-      "talk": false,
-      "blurb": "Steady, ongoing work every month."
-    },
-    {
-      "tier": "A",
-      "name": "Dedicated",
-      "hours": 40,
-      "talk": false,
-      "blurb": "A substantial monthly commitment, like a part-time teammate."
-    },
-    {
-      "tier": "S",
-      "name": "Company",
-      "hours": null,
-      "talk": true,
-      "blurb": "For companies and larger teams. Scoped with me personally."
-    }
-  ],
   "hourly": [
     {
       "id": "websites",

@@ -130,9 +130,13 @@
   <p class="eyebrow">Plans</p>
   <h2 class="h2">Planned pricing.</h2>
   <p class="sub">These are the plans mxReach is being built around. They aren&rsquo;t live and may still move before
-    launch &mdash; nothing here can be bought yet.</p>
+    launch &mdash; nothing here can be bought yet. Pay monthly, or annually and get two months free.</p>
+  <div class="billing" data-billing hidden role="group" aria-label="Billing period">
+    <button type="button" data-period="monthly" aria-pressed="true">Monthly</button>
+    <button type="button" data-period="annual" aria-pressed="false">Annual<span class="calc-flag">2 months free</span></button>
+  </div>
   <div class="plans four">
-    <div class="plan reveal">
+    <div class="plan reveal" data-monthly="29" data-annual="290">
       <div class="tier">Pro</div>
       <div class="price"><b>$29</b><span>/ month</span></div>
       <ul>
@@ -144,7 +148,7 @@
       </ul>
       <p class="planned">Planned · not live yet</p>
     </div>
-    <div class="plan feat reveal">
+    <div class="plan feat reveal" data-monthly="49" data-annual="490">
       <div class="tier">Max</div>
       <div class="price"><b>$49</b><span>/ month</span></div>
       <ul>
@@ -155,7 +159,7 @@
       </ul>
       <p class="planned">Planned · not live yet</p>
     </div>
-    <div class="plan reveal">
+    <div class="plan reveal" data-monthly="119" data-annual="1190">
       <div class="tier">Team</div>
       <div class="price"><b>$119</b><span>/ month</span></div>
       <ul>
