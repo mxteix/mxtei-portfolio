@@ -94,22 +94,78 @@
   <a class="back" href="../">← back to mxtei</a>
   <p class="eyebrow ember">Payment</p>
   <h1 class="h1-brand">No surprises on the <em class="serif">invoice</em>.</h1>
-  <p class="sub" style="font-size:16px;max-width:54ch;margin-top:18px">Everything is billed hourly at a rate we
-    agree before I start, against hours I log as I go. You always know the number before the work happens.</p>
+  <p class="sub" style="font-size:16px;max-width:54ch;margin-top:18px">Hourly, fixed package or monthly retainer &mdash; everything is priced at a rate we
+    agree before I start. Use the estimator below to see the number before the work happens.</p>
   <div class="btns">
     <a class="btn btn-solid" data-pay="stripe" href="#invoice">Pay by card</a>
     <a class="btn btn-ghost" href="#invoice">Request an invoice</a>
   </div>
 </section>
 <div class="wrap"><div class="rule"></div></div>
-<section class="sec wrap" data-fire="services">
+<section class="sec wrap" id="estimate" data-fire="pricing">
+  <p class="eyebrow">Estimate</p>
+  <h2 class="h2">Work out what you&rsquo;ll pay.</h2>
+  <p class="sub">Choose how you&rsquo;d like to work. The numbers update as you go, and I confirm the final
+    price with you before starting.</p>
+  <div class="calc reveal" data-calc>
+    <div class="calc-tabs" role="tablist" aria-label="How you'd like to work">
+      <button type="button" role="tab" aria-selected="true" data-mode="hourly">By the hour</button>
+      <button type="button" role="tab" aria-selected="false" data-mode="package">Fixed package</button>
+      <button type="button" role="tab" aria-selected="false" data-mode="monthly">Monthly retainer<span class="calc-flag">save 10%</span></button>
+    </div>
+    <div class="calc-grid">
+      <div class="calc-in">
+        <label class="calc-field"><span>Service</span><select data-f="service"></select></label>
+
+        <div class="calc-field" data-show="hourly">
+          <span>Hours <output data-o="hours">10</output></span>
+          <input type="range" min="1" max="120" step="1" value="10" data-f="hours" aria-label="Hours">
+          <small>Not sure? Most small jobs take 3&ndash;10 hours. I confirm before starting.</small>
+        </div>
+
+        <div class="calc-field" data-show="package" hidden>
+          <span>Size</span>
+          <div class="calc-tiers" data-o="tiers" role="radiogroup" aria-label="Package size"></div>
+        </div>
+
+        <div data-show="monthly" hidden>
+          <div class="calc-field">
+            <span>Hours per month <output data-o="mhours">20</output></span>
+            <input type="range" min="5" max="120" step="5" value="20" data-f="mhours" aria-label="Hours per month">
+          </div>
+          <div class="calc-field">
+            <span>Months <output data-o="months">3</output></span>
+            <input type="range" min="1" max="12" step="1" value="3" data-f="months" aria-label="Months">
+            <small>Commit to 3 months or more and every month is 10% off.</small>
+          </div>
+        </div>
+
+        <label class="calc-ref"><input type="checkbox" data-f="referral">
+          <span><b>I have a referral code</b><small>15% off your first invoice</small></span></label>
+      </div>
+
+      <div class="calc-out" aria-live="polite">
+        <div class="calc-lines" data-o="lines"></div>
+        <div class="calc-total"><span data-o="label">Estimated total</span><b data-o="total">&mdash;</b></div>
+        <p class="calc-note" data-o="note"></p>
+        <div class="calc-actions">
+          <a class="btn btn-solid" href="../#contact" data-calc-request>Request this</a>
+          <a class="btn btn-ghost" href="../pay/">Pay an invoice</a>
+        </div>
+        <p class="calc-aside">Something custom? <a href="../#contact">Get a quote</a>.
+          mxReach pricing is <a href="../mxreach/">coming soon</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="sec wrap" id="how" data-fire="services">
   <p class="eyebrow">How billing works</p>
   <h2 class="h2">Four steps, start to settled.</h2>
   <div class="hair steps">
-    <div class="hcard reveal"><div class="idx">01</div><h3>Scope</h3><p>We agree an hourly rate and an estimate before any work starts.</p></div>
-    <div class="hcard reveal"><div class="idx">02</div><h3>Deposit</h3><p>Larger projects open with a deposit. Smaller jobs are billed on delivery.</p></div>
-    <div class="hcard reveal"><div class="idx">03</div><h3>Build</h3><p>I log hours as I go, and you can ask where things stand at any point.</p></div>
-    <div class="hcard reveal"><div class="idx">04</div><h3>Settle</h3><p>Final invoice against logged hours, with the deposit already deducted.</p></div>
+    <div class="hcard reveal"><div class="idx">Step 1</div><h3>Scope</h3><p>We agree the scope and the price — hourly, a fixed package or a monthly retainer — before any work starts.</p></div>
+    <div class="hcard reveal"><div class="idx">Step 2</div><h3>Deposit</h3><p>Larger projects open with a deposit. Smaller jobs are billed on delivery.</p></div>
+    <div class="hcard reveal"><div class="idx">Step 3</div><h3>Build</h3><p>I do the work and keep you updated. Hourly and retainer work is logged as I go.</p></div>
+    <div class="hcard reveal"><div class="idx">Step 4</div><h3>Settle</h3><p>One invoice, with any deposit already deducted.</p></div>
   </div>
 </section>
 <section class="sec wrap" data-fire="about">
@@ -175,13 +231,14 @@
       <span>&copy; 2026 Marcell · mxtei.com</span>
       <span class="fsocial">
         <a href="https://discord.com/users/379660404378566656" target="_blank" rel="noopener">Discord</a>
-        <a href="https://instagram.com/mxteii" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://instagram.com/hyperover" target="_blank" rel="noopener">Instagram</a>
       </span>
     </div>
   </div>
 </footer>
 </div>
 <script src="../assets/fire.js"></script>
+<script src="../assets/pricing.js"></script>
 <script src="../assets/site.js"></script>
 <script data-goatcounter="https://mxtei.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

@@ -132,17 +132,63 @@
   }
 
   /* ---- forms -----------------------------------------------------------
-     Same Formspree endpoint the current site uses. On failure we fall back to
-     a mailto so a visitor is never left with a dead button. */
+     Primary path: the Supabase "contact" function, which stores the submission
+     and sends branded emails from mxtei (supabase/functions/contact).
+     Fallbacks, in order, so a visitor is never left with a dead button:
+       function unreachable / not deployed / server error  -> Formspree
+       function stored it but couldn't email (emailed:false) -> also Formspree,
+         so a lead is never silent
+       Formspree fails too                                 -> mailto link   */
+  var CONTACT_FN = "https://eqaxhjscluhnkbifrwqx.supabase.co/functions/v1/contact";
+  // Public anon key (safe by design; the function is the only thing it can call here).
+  var SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxYXhoanNjbHVobmtiaWZyd3F4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1ODA1MzMsImV4cCI6MjEwNTE1NjUzM30.jjYyFY58Yj_Nz3JXMECjy67_RwE9iSrb745SPOkuVeY";
   var FORM_ID = "maqrngno";
   var MAILTO = "mxldisc@gmail.com,marcellszoke@icloud.com";
+
+  var SUBJECT = { waitlist: "mxReach waitlist", invoice: "Invoice request",
+                  referral: "Referral code request", contact: "New message" };
+  var DONE = {
+    waitlist: ["You're on the list — check your inbox for a confirmation.", "You're on the list"],
+    invoice:  ["Got it — I'll send the invoice or payment link today.", "Request sent"],
+    referral: ["Done — your referral code is on its way today.", "Code on its way"],
+    contact:  ["Message sent — I'll get back to you shortly.", "Sent"]
+  };
+
+  function viaFormspree(kind, data) {
+    return fetch("https://formspree.io/f/" + FORM_ID, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: data.name || "", contact: data.contact, service: data.service || "",
+        message: data.message || "(" + kind + " — no message)",
+        _subject: (SUBJECT[kind] || "New message") + " — " + (data.name || "website")
+      })
+    }).then(function (r) { if (!r.ok) throw new Error("formspree " + r.status); });
+  }
+
+  function viaFunction(kind, data) {
+    return fetch(CONTACT_FN, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON,
+                 Authorization: "Bearer " + SUPABASE_ANON },
+      body: JSON.stringify({ kind: kind, name: data.name || "", contact: data.contact,
+        service: data.service || "", message: data.message || "",
+        company_website: data.company_website || "" })
+    });
+  }
 
   function forms() {
     Array.prototype.forEach.call(document.querySelectorAll("form[data-mxform]"), function (form) {
       var msg = form.querySelector(".formmsg");
       var btn = form.querySelector(".send");
-      var kind = form.getAttribute("data-mxform");   // "contact" | "waitlist"
+      var kind = form.getAttribute("data-mxform");
       var sending = false;
+
+      // Honeypot: invisible to people, irresistible to form-filling bots.
+      var hp = document.createElement("input");
+      hp.type = "text"; hp.name = "company_website"; hp.tabIndex = -1;
+      hp.autocomplete = "off"; hp.className = "hp"; hp.setAttribute("aria-hidden", "true");
+      form.appendChild(hp);
 
       form.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -158,37 +204,31 @@
         if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
         say("", "");
 
-        var who = data.name || "website";
-        var subject = kind === "waitlist" ? "mxReach waitlist — " + who
-                    : kind === "invoice"  ? "Invoice request — " + who
-                    : kind === "referral" ? "Referral code request — " + who
-                    : "New message from " + who;
-
-        fetch("https://formspree.io/f/" + FORM_ID, {
-          method: "POST",
-          headers: { Accept: "application/json", "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: data.name || "",
-            contact: data.contact,
-            service: data.service || "",
-            message: data.message || "(" + kind + " — no message)",
-            _subject: subject
-          })
-        }).then(function (res) {
-          if (!res.ok) throw new Error("bad status");
+        viaFunction(kind, data).then(function (res) {
+          if (res.status === 429) { var rate = new Error("rate"); rate.rate = true; throw rate; }
+          if (res.status === 400) { var bad = new Error("invalid"); bad.invalid = true; throw bad; }
+          if (!res.ok) return viaFormspree(kind, data);            // not deployed / server error
+          return res.json().then(function (j) {
+            if (j && j.emailed === false) return viaFormspree(kind, data).catch(function () {});
+          });
+        }, function () {
+          return viaFormspree(kind, data);                          // network / CORS failure
+        }).then(function () {
           form.reset();
-          say(kind === "waitlist" ? "You're on the list — I'll email you when early access opens."
-            : kind === "invoice"  ? "Got it — I'll send the invoice or payment link today."
-            : kind === "referral" ? "Done — your referral code is on its way today."
-            : "Message sent. I'll get back to you shortly.", "ok");
-          if (btn) btn.textContent = kind === "waitlist" ? "You're on the list"
-                                   : kind === "invoice"  ? "Request sent"
-                                   : kind === "referral" ? "Code on its way" : "Sent";
-        }).catch(function () {
-          var body = "Reach me at: " + data.contact + "\n\n" + (data.message || "");
-          say('Couldn\'t send just now — <a href="mailto:' + MAILTO +
-              "?subject=" + encodeURIComponent(subject) +
-              "&body=" + encodeURIComponent(body) + '">email me directly instead →</a>', "err");
+          var d = DONE[kind] || DONE.contact;
+          say(d[0], "ok");
+          if (btn) btn.textContent = d[1];
+        }).catch(function (err) {
+          if (err && err.rate) {
+            say("That's a lot of messages in a short time — try again in a few minutes.", "err");
+          } else if (err && err.invalid) {
+            say("Something in the form wasn't accepted — check your email or Discord and try again.", "err");
+          } else {
+            var body = "Reach me at: " + data.contact + "\n\n" + (data.message || "");
+            say('Couldn\'t send just now — <a href="mailto:' + MAILTO +
+                "?subject=" + encodeURIComponent(SUBJECT[kind] || "New message") +
+                "&body=" + encodeURIComponent(body) + '">email me directly instead →</a>', "err");
+          }
           if (btn) { btn.disabled = false; btn.textContent = btn.getAttribute("data-label") || "Send"; }
           sending = false;
         });
@@ -293,9 +333,213 @@
     });
   }
 
+  /* ---- pricing calculator ----------------------------------------------
+     Reads window.MX_PRICING (assets/pricing.js). Three ways to work: hourly,
+     fixed package tiers, and monthly retainers (10% off for 3+ months). The
+     referral toggle takes 15% off the first invoice, which on a retainer is
+     the first month. "Request this" hands the estimate to the contact form,
+     on this page or, via sessionStorage, on the homepage. */
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+  function pct(x) { return Math.round(x * 100) + "%"; }
+  function setService(sel, text) {
+    Array.prototype.forEach.call(sel.options, function (o) {
+      if (o.text === text) sel.value = o.value || o.text;
+    });
+  }
+
+  function calculators() {
+    var P = window.MX_PRICING;
+    if (!P) return;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-calc]"), function (root) {
+      var q = function (s) { return root.querySelector(s); };
+      var st = { mode: "hourly", svc: 0, hours: 10, tier: 1, mhours: 20, months: 3, referral: false };
+      var sel = q('[data-f="service"]');
+      var tabs = [].slice.call(root.querySelectorAll("[data-mode]"));
+
+      function list() { return st.mode === "package" ? P.packages : P.hourly; }
+
+      function fillServices() {
+        var items = list();
+        if (st.svc >= items.length) st.svc = 0;
+        sel.innerHTML = items.map(function (it, i) {
+          return '<option value="' + i + '">' + esc(it.name) + "</option>";
+        }).join("");
+        sel.value = String(st.svc);
+      }
+
+      // Keep the same service selected when switching between ways of working.
+      function switchMode(mode) {
+        if (mode === st.mode) return;
+        var cur = list()[st.svc], id = cur ? cur.id : "";
+        st.mode = mode;
+        if (mode === "package" && id === "botsplus") id = "bots";
+        var idx = list().map(function (x) { return x.id; }).indexOf(id);
+        st.svc = idx < 0 ? 0 : idx;
+        fillServices();
+        render();
+      }
+
+      function renderTiers(item) {
+        var box = q('[data-o="tiers"]');
+        if (box.getAttribute("data-for") !== item.id) {
+          box.setAttribute("data-for", item.id);
+          var group = "tier-" + Math.random().toString(36).slice(2, 8);
+          box.innerHTML = item.tiers.map(function (t, i) {
+            return '<label class="calc-tier"><input type="radio" name="' + group + '" value="' + i + '">' +
+              '<span class="calc-tier-top"><em>Tier ' + esc(t.tier) + "</em><b>" +
+              (t.from ? "from " : "") + money(t.price) + "</b></span>" +
+              '<span class="calc-tier-name">' + esc(t.name) + "</span>" +
+              '<span class="calc-tier-blurb">' + esc(t.blurb) + "</span></label>";
+          }).join("");
+        }
+        Array.prototype.forEach.call(box.querySelectorAll("input"), function (r) {
+          r.checked = Number(r.value) === st.tier;
+        });
+      }
+
+      function render() {
+        tabs.forEach(function (b) {
+          var on = b.getAttribute("data-mode") === st.mode;
+          b.setAttribute("aria-selected", String(on));
+          b.tabIndex = on ? 0 : -1;
+        });
+        Array.prototype.forEach.call(root.querySelectorAll("[data-show]"), function (el) {
+          el.hidden = el.getAttribute("data-show") !== st.mode;
+        });
+
+        var item = list()[st.svc];
+        var lines = [], total = 0, from = false, note = "", first = 0, form = "", summary = "";
+
+        if (st.mode === "hourly") {
+          total = st.hours * item.rate;
+          first = total;
+          lines.push([st.hours + " h × " + money(item.rate) + "/h", money(total)]);
+          note = "Estimate. The hours are agreed before work starts and billed against what’s logged.";
+          form = item.form;
+          summary = item.name + " — " + st.hours + " hours at " + money(item.rate) + "/h";
+        } else if (st.mode === "package") {
+          renderTiers(item);
+          var t = item.tiers[st.tier] || item.tiers[0];
+          total = t.price; first = total; from = t.from;
+          lines.push(["Tier " + t.tier + " · " + t.name, (from ? "from " : "") + money(total)]);
+          note = from ? "Starting price. The final quote depends on scope, and I confirm it before starting."
+                      : "Fixed price for this scope, confirmed before I start.";
+          form = t.form;
+          summary = item.name + " — Tier " + t.tier + " (" + t.name + "), " + (from ? "from " : "") + money(total);
+        } else {
+          var monthly = st.mhours * item.rate;
+          var gross = monthly * st.months;
+          var disc = st.months >= P.retainer.minMonths ? gross * P.retainer.discount : 0;
+          total = gross - disc;
+          first = total / st.months;
+          lines.push([st.mhours + " h/month × " + money(item.rate) + "/h", money(monthly) + "/mo"]);
+          lines.push(["× " + st.months + (st.months === 1 ? " month" : " months"), money(gross)]);
+          if (disc) lines.push(["Retainer discount (" + pct(P.retainer.discount) + ")", "−" + money(disc), true]);
+          note = "Billed monthly: " + money(first) + " a month." + (disc ? "" :
+            " Commit to " + P.retainer.minMonths + "+ months to save " + pct(P.retainer.discount) + ".");
+          form = item.form;
+          summary = item.name + " retainer — " + st.mhours + " h/month for " + st.months +
+            (st.months === 1 ? " month" : " months") + (disc ? " (" + pct(P.retainer.discount) + " retainer discount)" : "");
+        }
+
+        if (st.referral) {
+          var save = first * P.referral.discount;
+          var what = st.mode === "monthly" ? "month" : "invoice";
+          lines.push(["Referral — " + pct(P.referral.discount) + " off first " + what, "−" + money(save), true]);
+          total -= save;
+          if (st.mode === "monthly") note += " Your first month is " + money(first - save) + " with the referral code.";
+          summary += ", with a referral code";
+        }
+
+        q('[data-o="lines"]').innerHTML = lines.map(function (l) {
+          return '<div class="calc-line' + (l[2] ? " is-save" : "") + '"><span>' + esc(l[0]) +
+                 "</span><b>" + esc(l[1]) + "</b></div>";
+        }).join("");
+        q('[data-o="label"]').textContent = st.mode === "monthly" ? "Total for the term" : "Estimated total";
+        q('[data-o="total"]').textContent = (from ? "from " : "") + money(total);
+        q('[data-o="note"]').textContent = note;
+        q('[data-o="hours"]').textContent = st.hours;
+        q('[data-o="mhours"]').textContent = st.mhours;
+        q('[data-o="months"]').textContent = st.months;
+
+        root._quote = {
+          service: form,
+          text: "Calculator estimate: " + summary + "\nEstimated total: " + (from ? "from " : "") + money(total) + "\n\n"
+        };
+      }
+
+      root.addEventListener("click", function (e) {
+        var tab = e.target.closest && e.target.closest("[data-mode]");
+        if (tab && root.contains(tab)) switchMode(tab.getAttribute("data-mode"));
+      });
+      // Arrow keys move between the three tabs, as a tablist should.
+      root.querySelector('[role="tablist"]').addEventListener("keydown", function (e) {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        var i = tabs.map(function (b) { return b.getAttribute("data-mode"); }).indexOf(st.mode);
+        var next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+        switchMode(next.getAttribute("data-mode"));
+        next.focus();
+        e.preventDefault();
+      });
+      root.addEventListener("input", function (e) {
+        var f = e.target.getAttribute && e.target.getAttribute("data-f");
+        if (f === "hours") st.hours = Number(e.target.value);
+        else if (f === "mhours") st.mhours = Number(e.target.value);
+        else if (f === "months") st.months = Number(e.target.value);
+        else return;
+        render();
+      });
+      root.addEventListener("change", function (e) {
+        var t = e.target, f = t.getAttribute && t.getAttribute("data-f");
+        if (f === "service") { st.svc = Number(t.value); render(); }
+        else if (f === "referral") { st.referral = t.checked; render(); }
+        else if (t.type === "radio") { st.tier = Number(t.value); render(); }
+      });
+
+      var req = q("[data-calc-request]");
+      if (req) req.addEventListener("click", function () {
+        var quote = root._quote;
+        if (!quote) return;
+        var fsel = document.getElementById("c-service"), msg = document.getElementById("c-msg");
+        if (fsel && msg) {
+          setService(fsel, quote.service);
+          // never overwrite something the visitor typed themselves
+          if (!msg.value || msg.getAttribute("data-from-calc")) {
+            msg.value = quote.text;
+            msg.setAttribute("data-from-calc", "1");
+          }
+        } else {
+          try { sessionStorage.setItem("mx_quote", JSON.stringify(quote)); } catch (err) { /* private mode */ }
+        }
+      });
+
+      fillServices();
+      render();
+    });
+  }
+
+  // Arriving on the homepage from an estimate on another page.
+  function prefillQuote() {
+    var raw = null;
+    try { raw = sessionStorage.getItem("mx_quote"); sessionStorage.removeItem("mx_quote"); } catch (e) { return; }
+    if (!raw) return;
+    var quote;
+    try { quote = JSON.parse(raw); } catch (e) { return; }
+    var sel = document.getElementById("c-service"), msg = document.getElementById("c-msg");
+    if (sel) setService(sel, quote.service);
+    if (msg && !msg.value) { msg.value = quote.text; msg.setAttribute("data-from-calc", "1"); }
+  }
+
   function init() {
     nav();
     serviceLinks();
+    calculators();
+    prefillQuote();
     payLinks();
     particles();
     reveals();

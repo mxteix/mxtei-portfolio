@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
+<title>Confirm your email</title>
+</head>
+<body style="margin:0;padding:0;background:#F3EFEA;-webkit-text-size-adjust:100%;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">One click to confirm your email and open your mxtei client portal.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F3EFEA;">
+<tr><td align="center" style="padding:32px 14px 40px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+<tr><td style="background:#0B0A09;border-radius:16px 16px 0 0;padding:26px 36px;">
+<a href="https://mxtei.com" style="text-decoration:none;"><img src="https://mxtei.com/assets/email/logo.png" width="180" height="40" alt="mxtei" style="display:block;border:0;outline:none;"></a>
+</td></tr>
+<tr><td style="height:3px;line-height:3px;font-size:0;background:#FF5A1F;background-image:linear-gradient(90deg,#FF4D0F,#FF9A12,#FFD84A);">&nbsp;</td></tr>
+<tr><td style="background:#FFFFFF;padding:38px 36px 34px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#3A3431;">
+<p style="margin:0 0 10px;font-size:13px;line-height:1.4;font-weight:600;color:#C2410C;">Client portal</p>
+<h1 style="margin:0 0 16px;font-size:26px;line-height:1.25;font-weight:700;letter-spacing:-0.02em;color:#0B0A09;">Confirm your email</h1>
+<p style="margin:0 0 14px;font-size:15px;line-height:1.65;color:#3A3431;">Confirm this address to open your mxtei client portal. Once you&rsquo;re in, you&rsquo;ll see your projects, the hours logged against them and every invoice.</p><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 6px;">
+<tr><td align="center" bgcolor="#FF5A1F" style="border-radius:999px;">
+<a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:14px 30px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1;font-weight:700;color:#0B0A09;text-decoration:none;border-radius:999px;">Confirm and sign in</a>
+</td></tr></table><p style="margin:18px 0 0;font-size:12px;line-height:1.6;color:#736A63;">Button not working? Paste this link into your browser:<br><a href="{{ .ConfirmationURL }}" style="color:#C2410C;word-break:break-all;">{{ .ConfirmationURL }}</a></p>
+</td></tr>
+<tr><td style="background:#FFFFFF;border-top:1px solid #EDE7E0;border-radius:0 0 16px 16px;padding:22px 36px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<p style="margin:0 0 14px;font-size:13px;line-height:1.6;color:#6B625C;">This confirmation was requested for {{ .Email }}. If you didn&rsquo;t sign up, ignore this email and nothing will happen.</p><p style="margin:0;font-size:12px;line-height:1.7;color:#736A63;">mxtei &middot; Freelance builds, community growth &amp; mxReach<br>
+<a href="https://mxtei.com" style="color:#736A63;text-decoration:underline;">mxtei.com</a> &middot; <a href="mailto:marcellszoke@icloud.com" style="color:#736A63;text-decoration:underline;">marcellszoke@icloud.com</a></p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
