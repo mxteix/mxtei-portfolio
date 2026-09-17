@@ -36,6 +36,14 @@
     <a class="lock" href="./"><svg class="mark" viewBox="23 8 74 144" width="13.4" height="26.0" fill="none" role="img" aria-label="mxtei"><defs><linearGradient id="mgh" x1="60" y1="8" x2="60" y2="152" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF4D0F"/><stop offset="0.5" stop-color="#FF9A12"/><stop offset="1" stop-color="#FFD84A"/></linearGradient></defs><g fill="url(#mgh)"><path d="M60 8 L79 60 L60 43 L41 60 Z"/><path d="M60 50 L88 116 L60 94 L32 116 Z"/><path d="M60 98 L97 152 L60 134 L23 152 Z"/></g></svg><span>mxtei</span></a>
     <nav class="nav" aria-label="Main">
       <div class="drop">
+        <button class="dropbtn" type="button" aria-expanded="false" aria-controls="menu-services">Services<svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 L6 8 L9.5 4.5"/></svg></button>
+        <div class="menu" id="menu-services">
+          <a href="#services">What I do &amp; rates<span>Every service, with its hourly rate</span></a>
+          <a href="#pricing">How pricing works<span>Scoping, deposits and invoices</span></a>
+          <a href="./referral/">Referral program<span>15% off for you and them</span></a>
+        </div>
+      </div>
+      <div class="drop">
         <button class="dropbtn" type="button" aria-expanded="false" aria-controls="menu-work">Work<svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 L6 8 L9.5 4.5"/></svg></button>
         <div class="menu" id="menu-work">
           <a href="#work">Selected work<span>Clients, servers and builds</span></a>
@@ -44,47 +52,41 @@
         </div>
       </div>
       <div class="drop">
-        <button class="dropbtn" type="button" aria-expanded="false" aria-controls="menu-services">Services<svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 L6 8 L9.5 4.5"/></svg></button>
-        <div class="menu" id="menu-services">
-          <a href="#services">What I do<span>Websites, apps, bots, growth</span></a>
-          <a href="#pricing">Pricing<span>Hourly rates, scoped up front</span></a>
-          <a href="./referral/">Referral program<span>15% off for you and them</span></a>
-        </div>
-      </div>
-      <div class="drop">
-        <button class="dropbtn" type="button" aria-expanded="false" aria-controls="menu-contact">Contact<svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 L6 8 L9.5 4.5"/></svg></button>
-        <div class="menu" id="menu-contact">
-          <a href="#contact">Get in touch<span>Start a project</span></a>
-          <a href="./socials/">Socials<span>Discord, Instagram, email</span></a>
-          <a href="./pay/">Payment<span>Invoices and ways to pay</span></a>
+        <button class="dropbtn" type="button" aria-expanded="false" aria-controls="menu-billing">Billing<svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 L6 8 L9.5 4.5"/></svg></button>
+        <div class="menu" id="menu-billing">
+          <a href="./pay/">Pay an invoice<span>Card, PayPal, Wise, Revolut, bank, crypto</span></a>
+          <a href="./pay/#how">How billing works<span>Scope, deposit, build, settle</span></a>
           <a href="./login/">Client portal<span>Your projects, hours and invoices</span></a>
         </div>
       </div>
     </nav>
-    <a class="signin" href="./login/">Log in</a>
     <a class="pill" href="./mxreach/"><i></i>mxReach</a>
+    <a class="navcta" href="#contact">Start a project</a>
     <button class="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
   </div>
 </header>
 <div class="drawer" id="drawer">
+    <div class="dgroup"><h4>Services</h4>
+      <a href="#services">What I do &amp; rates</a>
+      <a href="#pricing">How pricing works</a>
+      <a href="./referral/">Referral program</a>
+    </div>
     <div class="dgroup"><h4>Work</h4>
       <a href="#work">Selected work</a>
       <a href="#reviews">Testimonials</a>
       <a href="#about">About me</a>
     </div>
-    <div class="dgroup"><h4>Services</h4>
-      <a href="#services">What I do</a>
-      <a href="#pricing">Pricing</a>
-      <a href="./referral/">Referral program</a>
-    </div>
-    <div class="dgroup"><h4>Contact</h4>
-      <a href="#contact">Get in touch</a>
-      <a href="./socials/">Socials</a>
-      <a href="./pay/">Payment</a>
+    <div class="dgroup"><h4>Billing</h4>
+      <a href="./pay/">Pay an invoice</a>
+      <a href="./pay/#how">How billing works</a>
       <a href="./login/">Client portal</a>
     </div>
     <div class="dgroup"><h4>Product</h4>
       <a href="./mxreach/">mxReach</a>
+    </div>
+    <div class="dgroup"><h4>Get in touch</h4>
+      <a href="#contact">Start a project</a>
+      <a href="./socials/">Socials</a>
     </div>
 </div>
 <main>
@@ -111,14 +113,14 @@
   <p class="sub" style="margin-top:-28px">Billed hourly and scoped together before anything starts, so you get a clear
     estimate up front and no surprise invoices.</p>
   <div class="hair">
-    <div class="hcard reveal"><div class="idx">01</div><h3>Websites &amp; apps</h3><p>Marketing sites, dashboards and web apps. Designed and shipped end to end.</p><div class="rate">$55–70 / hour</div></div>
-    <div class="hcard reveal"><div class="idx">02</div><h3>App development</h3><p>Custom web and mobile apps for companies and individuals — clean UX, solid engineering.</p><div class="rate">$65–80 / hour</div></div>
-    <div class="hcard reveal"><div class="idx">03</div><h3>Custom bots — easy &amp; medium</h3><p>A Discord, outreach or utility bot with a focused feature set. Covers most needs.</p><div class="rate">$45–55 / hour</div></div>
-    <div class="hcard reveal"><div class="idx">04</div><h3>Custom bots — advanced</h3><p>Complex logic, multiple integrations, databases, AI features. The full works.</p><div class="rate">$55–70 / hour</div></div>
-    <div class="hcard reveal"><div class="idx">05</div><h3>Discord server setup</h3><p>A complete, polished server — roles, channels, onboarding and branding, done right.</p><div class="rate">$45–60 / hour</div></div>
-    <div class="hcard reveal"><div class="idx">06</div><h3>Community growth</h3><p>Hands-on strategy and execution that brings real, active members to your server.</p><div class="rate">$45–60 / hour</div></div>
-    <div class="hcard reveal"><div class="idx">07</div><h3>Partnerships &amp; outreach</h3><p>I find, vet and pitch partners that actually grow your community. 30+ closed.</p><div class="rate">$50–65 / hour</div></div>
-    <div class="hcard reveal"><div class="idx">08</div><h3>Customs</h3><p>Something unusual or ambitious that doesn&rsquo;t fit a box? Tell me — I like those.</p><div class="rate">Scoped per project</div></div>
+    <a class="hcard reveal" href="#contact" data-service="Websites and apps"><div class="idx">01</div><h3>Websites &amp; apps</h3><p>Marketing sites, dashboards and web apps. Designed and shipped end to end.</p><div class="cardfoot"><span class="rate">$55–70 / hour</span><span class="cardgo">Get a quote &rarr;</span></div></a>
+    <a class="hcard reveal" href="#contact" data-service="App development"><div class="idx">02</div><h3>App development</h3><p>Custom web and mobile apps for companies and individuals — clean UX, solid engineering.</p><div class="cardfoot"><span class="rate">$65–80 / hour</span><span class="cardgo">Get a quote &rarr;</span></div></a>
+    <a class="hcard reveal" href="#contact" data-service="Custom bots — easy and medium"><div class="idx">03</div><h3>Custom bots — easy &amp; medium</h3><p>A Discord, outreach or utility bot with a focused feature set. Covers most needs.</p><div class="cardfoot"><span class="rate">$45–55 / hour</span><span class="cardgo">Get a quote &rarr;</span></div></a>
+    <a class="hcard reveal" href="#contact" data-service="Custom bots — advanced"><div class="idx">04</div><h3>Custom bots — advanced</h3><p>Complex logic, multiple integrations, databases, AI features. The full works.</p><div class="cardfoot"><span class="rate">$55–70 / hour</span><span class="cardgo">Get a quote &rarr;</span></div></a>
+    <a class="hcard reveal" href="#contact" data-service="Discord server setup"><div class="idx">05</div><h3>Discord server setup</h3><p>A complete, polished server — roles, channels, onboarding and branding, done right.</p><div class="cardfoot"><span class="rate">$45–60 / hour</span><span class="cardgo">Get a quote &rarr;</span></div></a>
+    <a class="hcard reveal" href="#contact" data-service="Community growth"><div class="idx">06</div><h3>Community growth</h3><p>Hands-on strategy and execution that brings real, active members to your server.</p><div class="cardfoot"><span class="rate">$45–60 / hour</span><span class="cardgo">Get a quote &rarr;</span></div></a>
+    <a class="hcard reveal" href="#contact" data-service="Partnerships and outreach"><div class="idx">07</div><h3>Partnerships &amp; outreach</h3><p>I find, vet and pitch partners that actually grow your community. 30+ closed.</p><div class="cardfoot"><span class="rate">$50–65 / hour</span><span class="cardgo">Get a quote &rarr;</span></div></a>
+    <a class="hcard reveal" href="#contact" data-service="Customs"><div class="idx">08</div><h3>Customs</h3><p>Something unusual or ambitious that doesn&rsquo;t fit a box? Tell me — I like those.</p><div class="cardfoot"><span class="rate">Scoped per project</span><span class="cardgo">Get a quote &rarr;</span></div></a>
     <a class="hcard reach reveal" href="mxreach/"><div class="idx">09</div><h3>mxReach →</h3><p>My own outreach tool, becoming a subscription product. Early access opens soon — join the waitlist.</p><div class="rate">Waitlist open</div></a>
   </div>
 </section>
@@ -212,46 +214,31 @@
   </div>
 </section>
 <section class="sec wrap" id="pricing" data-fire="pricing">
-  <p class="eyebrow">04 — Pricing</p>
-  <h2 class="h2">Two ways to work with mxtei.</h2>
-  <p class="sub">Bring me a build, or get early access to the tool. Service work is billed hourly and scoped
-    together before anything starts — you always get a clear estimate first.</p>
-  <div class="plans">
-    <div class="plan reveal">
-      <div class="tier">Services · Build</div>
-      <div class="price"><b>$55–80</b><span>/ hour</span></div>
-      <ul>
-        <li>Websites, apps &amp; custom bots</li>
-        <li>Scoped together up front</li>
-        <li>Clear estimate before we start</li>
-      </ul>
-      <a class="cta ghost" href="#contact">Request a quote</a>
-    </div>
-    <div class="plan feat reveal">
-      <span class="tagline badge">Popular</span>
-      <div class="tier">Services · Community</div>
-      <div class="price"><b>$45–65</b><span>/ hour</span></div>
-      <ul>
-        <li>Server setup &amp; growth</li>
-        <li>Partnerships &amp; outreach</li>
-        <li>1M+ members reached to date</li>
-        <li>Direct line to me, always</li>
-      </ul>
-      <a class="cta solid" href="#contact">Start a project</a>
-    </div>
-    <div class="plan reveal">
-      <span class="tagline badge">Waitlist</span>
-      <div class="tier">mxReach · Early access</div>
-      <div class="price"><b>$19</b><span>/ month planned</span></div>
-      <ul>
-        <li>500 contacts a month</li>
-        <li>Email sequences</li>
-        <li>One inbox</li>
-      </ul>
-      <a class="cta ghost" href="mxreach/">Join the waitlist</a>
-      <p class="planned">Planned pricing · not live yet</p>
-    </div>
+  <p class="eyebrow">04 — How pricing works</p>
+  <h2 class="h2">Hourly, agreed up front, <em class="serif">no guesswork</em>.</h2>
+  <p class="sub">Every job is billed hourly at a rate we settle before I start, against hours I log as I go.
+    You get an estimate first, so the invoice never surprises you.</p>
+
+  <div class="rateband">
+    <div><b>$55–80</b><span>/ hour</span><i>Websites, apps &amp; custom bots</i></div>
+    <div><b>$45–65</b><span>/ hour</span><i>Server setup, growth &amp; partnerships</i></div>
+    <div><b>Custom</b><span></span><i>Unusual builds, scoped per project</i></div>
   </div>
+
+  <div class="steprow">
+    <div><b>1. Scope</b><span>We agree what you need and a rate, before anything starts.</span></div>
+    <div><b>2. Build</b><span>I log hours as I go and you can check in whenever.</span></div>
+    <div><b>3. Settle</b><span>Invoice against logged hours. Six ways to pay.</span></div>
+  </div>
+
+  <div class="btns">
+    <a class="btn btn-solid" href="#contact">Get a quote</a>
+    <a class="btn btn-ghost" href="#services">See all services</a>
+    <a class="btn btn-ghost" href="pay/">Pay an invoice</a>
+  </div>
+  <p class="pricenote">Already working with me? Your hours and invoices live in the
+    <a href="login/">client portal</a>. Looking for mxReach pricing? That&rsquo;s on the
+    <a href="mxreach/">mxReach page</a>.</p>
 </section>
 <section class="sec wrap" id="about" data-fire="about">
   <div class="about">
@@ -289,20 +276,60 @@
   <form class="form" data-mxform="contact">
     <div><label for="c-name">Your name</label><input id="c-name" name="name" type="text" placeholder="Marcell" autocomplete="name"></div>
     <div><label for="c-contact">Email or Discord</label><input id="c-contact" name="contact" type="text" placeholder="you@example.com" required autocomplete="email"></div>
-    <div><label for="c-msg">What are you building?</label><textarea id="c-msg" name="message" placeholder="The idea, the deadline, the budget."></textarea></div>
+    <div><label for="c-service">What do you need?</label>
+      <select id="c-service" name="service">
+        <option value="">Pick one — or just tell me below</option>
+        <option>Websites and apps</option>
+        <option>App development</option>
+        <option>Custom bots — easy and medium</option>
+        <option>Custom bots — advanced</option>
+        <option>Discord server setup</option>
+        <option>Community growth</option>
+        <option>Partnerships and outreach</option>
+        <option>Customs</option>
+        <option>Something else</option>
+      </select></div>
+    <div><label for="c-msg">Tell me about it</label><textarea id="c-msg" name="message" placeholder="The idea, the deadline, the budget."></textarea></div>
     <button class="send" type="submit" data-label="Send message">Send message</button>
     <p class="formmsg" role="status" aria-live="polite"></p>
   </form>
 </section>
 </main>
 <footer class="ftr">
-  <div class="row">
-    <div class="l"><svg class="mark" viewBox="23 8 74 144" width="10.3" height="20.0" fill="#6E665F" aria-hidden="true"><path d="M60 8 L79 60 L60 43 L41 60 Z"/><path d="M60 50 L88 116 L60 94 L32 116 Z"/><path d="M60 98 L97 152 L60 134 L23 152 Z"/></svg><span>mxtei.com · freelance builds &amp; mxReach</span></div>
-    <div class="r">
-      <a href="mailto:marcellszoke@icloud.com">marcellszoke@icloud.com</a>
-      <a href="./socials/">Socials</a>
-      <a href="./pay/">Payment</a>
-      <a href="./referral/">Referral</a>
+  <div class="fwrap">
+    <div class="fgrid">
+      <div class="fbrand">
+        <div class="l"><svg class="mark" viewBox="23 8 74 144" width="11.3" height="22.0" fill="none" aria-hidden="true"><defs><linearGradient id="mgf" x1="60" y1="8" x2="60" y2="152" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF4D0F"/><stop offset="0.5" stop-color="#FF9A12"/><stop offset="1" stop-color="#FFD84A"/></linearGradient></defs><g fill="url(#mgf)"><path d="M60 8 L79 60 L60 43 L41 60 Z"/><path d="M60 50 L88 116 L60 94 L32 116 Z"/><path d="M60 98 L97 152 L60 134 L23 152 Z"/></g></svg><span>mxtei</span></div>
+        <p>Freelance websites, apps, bots and community growth — plus mxReach,
+          an outreach tool in early access.</p>
+      </div>
+      <div class="fcol"><h4>Services</h4>
+        <a href="#services">What I do &amp; rates</a>
+        <a href="#pricing">How pricing works</a>
+        <a href="./referral/">Referral program</a>
+      </div>
+      <div class="fcol"><h4>Work</h4>
+        <a href="#work">Selected work</a>
+        <a href="#reviews">Testimonials</a>
+        <a href="#about">About me</a>
+      </div>
+      <div class="fcol"><h4>Billing</h4>
+        <a href="./pay/">Pay an invoice</a>
+        <a href="./login/">Client portal</a>
+        <a href="./mxreach/">mxReach</a>
+      </div>
+      <div class="fcol"><h4>Contact</h4>
+        <a href="#contact">Start a project</a>
+        <a href="./socials/">All socials</a>
+        <a href="mailto:marcellszoke@icloud.com">marcellszoke@icloud.com</a>
+      </div>
+    </div>
+    <div class="fbar">
+      <span>&copy; 2026 Marcell · mxtei.com</span>
+      <span class="fsocial">
+        <a href="https://discord.com/users/379660404378566656" target="_blank" rel="noopener">Discord</a>
+        <a href="https://instagram.com/mxteii" target="_blank" rel="noopener">Instagram</a>
+      </span>
     </div>
   </div>
 </footer>

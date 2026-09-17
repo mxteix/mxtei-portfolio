@@ -170,6 +170,7 @@
           body: JSON.stringify({
             name: data.name || "",
             contact: data.contact,
+            service: data.service || "",
             message: data.message || "(" + kind + " — no message)",
             _subject: subject
           })
@@ -276,8 +277,25 @@
     }
   }
 
+  /* ---- service card -> contact form ------------------------------------
+     Reading a rate and asking for that service should be one click, not a
+     scroll and a retype. */
+  function serviceLinks() {
+    document.addEventListener("click", function (e) {
+      var card = e.target.closest && e.target.closest("[data-service]");
+      if (!card) return;
+      var sel = document.getElementById("c-service");
+      if (!sel) return;
+      var want = card.getAttribute("data-service");
+      Array.prototype.forEach.call(sel.options, function (o) {
+        if (o.text === want) sel.value = o.value || o.text;
+      });
+    });
+  }
+
   function init() {
     nav();
+    serviceLinks();
     payLinks();
     particles();
     reveals();

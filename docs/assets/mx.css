@@ -509,3 +509,73 @@ h1,h2,h3{margin:0;font-weight:600}
 .signin{flex:none;font-size:13.5px;color:var(--t65);transition:color .25s ease}
 .signin:hover{color:var(--cream)}
 @media (max-width:860px){ .signin{display:none} }
+
+/* ---------- nav CTA ---------- */
+.navcta{flex:none;padding:8px 18px;border-radius:999px;background:var(--ember);
+  color:var(--ink);font-size:13.5px;font-weight:600;white-space:nowrap;
+  box-shadow:0 8px 28px -12px rgba(255,90,31,.9);
+  transition:background .3s ease,transform .3s ease,box-shadow .3s ease}
+.navcta:hover{background:var(--ember-hover);color:var(--ink);transform:translateY(-1px);
+  box-shadow:0 14px 36px -12px rgba(255,90,31,1)}
+.navcta:focus-visible{outline:2px solid var(--cream-bright);outline-offset:3px}
+@media (max-width:860px){ .navcta{display:none} }
+
+/* ---------- service card as an action ---------- */
+.cardfoot{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  margin-top:16px;flex-wrap:wrap}
+.cardfoot .rate{margin-top:0}
+.cardgo{font-size:12.5px;color:var(--ember-hover);opacity:0;transform:translateX(-4px);
+  transition:opacity .3s ease,transform .3s ease;white-space:nowrap}
+.hcard:hover .cardgo,.hcard:focus-visible .cardgo{opacity:1;transform:none}
+/* touch has no hover, so never hide the affordance there */
+@media (hover:none){ .cardgo{opacity:1;transform:none} }
+
+/* ---------- rate band ---------- */
+.rateband{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;
+  overflow:hidden;margin-bottom:18px}
+.rateband>div{background:var(--card);padding:26px 24px}
+.rateband b{font-size:34px;font-weight:600;letter-spacing:-.035em}
+.rateband span{font-size:14px;color:var(--t55);margin-left:6px}
+.rateband i{display:block;font-style:normal;font-size:13.5px;color:var(--t50);margin-top:8px}
+
+.steprow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));
+  gap:14px;margin-bottom:30px}
+.steprow>div{border:1px solid var(--line);border-radius:14px;padding:20px 22px;
+  background:rgba(14,12,11,.5)}
+.steprow b{display:block;font-size:15px;font-weight:600}
+.steprow span{display:block;font-size:13.5px;line-height:1.6;color:var(--t50);margin-top:6px}
+.pricenote{margin:22px 0 0;font-size:13.5px;color:var(--t55)}
+
+/* ---------- select ---------- */
+.form select{width:100%;background:rgba(14,12,11,.8);color:var(--cream);
+  border:1px solid var(--line-strong);border-radius:12px;padding:13px 15px;
+  font:400 15px var(--sans);appearance:none;-webkit-appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%239A928A' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M2.5 4.5 L6 8 L9.5 4.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 15px center;background-size:12px;
+  padding-right:40px;transition:border-color .25s ease,box-shadow .25s ease}
+.form select:focus{outline:none;border-color:rgba(255,90,31,.55);
+  box-shadow:0 0 0 3px rgba(255,90,31,.14)}
+.form select:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.form select option{background:#14110F;color:var(--cream)}
+
+/* ---------- footer ---------- */
+.ftr{border-top:1px solid var(--line-soft);background:rgba(11,10,9,.8)}
+.fwrap{max-width:var(--wrap);margin:0 auto;padding:clamp(44px,7vh,68px) var(--gutter) 30px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));
+  gap:clamp(28px,4vw,48px)}
+.fbrand{grid-column:span 2;min-width:0}
+@media (max-width:640px){ .fbrand{grid-column:auto} }
+.fbrand .l{display:flex;align-items:center;gap:11px}
+.fbrand .l span{font-size:19px;font-weight:600;letter-spacing:-.02em;color:var(--cream)}
+.fbrand p{margin:14px 0 0;font-size:13.5px;line-height:1.7;color:var(--t50);max-width:34ch}
+.fcol h4{margin:0 0 14px;font-size:12.5px;font-weight:500;color:var(--t55)}
+.fcol a{display:block;padding:6px 0;font-size:14px;color:var(--t65);
+  transition:color .25s ease}
+.fcol a:hover{color:var(--spark)}
+.fbar{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;
+  margin-top:clamp(34px,5vh,52px);padding-top:24px;border-top:1px solid var(--line-soft);
+  font-size:13px;color:var(--t55)}
+.fsocial{display:flex;gap:18px}
+.fsocial a{color:var(--t55)}
+.fsocial a:hover{color:var(--spark)}
