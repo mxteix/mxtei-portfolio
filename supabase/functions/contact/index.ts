@@ -119,7 +119,7 @@ export function layout(o: Layout): string {
 <tr><td align="center" style="padding:32px 14px 40px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
 <tr><td style="background:#0B0A09;border-radius:16px 16px 0 0;padding:26px 36px;">
-<a href="${SITE}" style="text-decoration:none;"><img src="${LOGO}" width="180" height="40" alt="mxtei" style="display:block;border:0;outline:none;"></a>
+<a href="${SITE}" style="text-decoration:none;"><img src="${LOGO}" width="180" height="40" alt="mxtei" style="display:block;border:0;outline:none;font-family:${FONT};font-size:24px;font-weight:700;color:#F1ECE6;text-decoration:none;"></a>
 </td></tr>
 <tr><td style="height:3px;line-height:3px;font-size:0;background:#FF5A1F;background-image:linear-gradient(90deg,#FF4D0F,#FF9A12,#FFD84A);">&nbsp;</td></tr>
 <tr><td style="background:#FFFFFF;padding:38px 36px 34px;font-family:${FONT};color:#3A3431;">
