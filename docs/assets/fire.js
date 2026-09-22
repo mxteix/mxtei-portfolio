@@ -22,7 +22,7 @@
   var FRAG = [
     "precision highp float;",
     "uniform vec2 u_res;uniform float u_time;uniform vec2 u_mouse;",
-    "uniform float u_speed,u_scale,u_base,u_side,u_center,u_bright,u_spark,u_open;",
+    "uniform float u_scale,u_base,u_side,u_center,u_bright,u_spark,u_open;",
     "float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}",
     "float noise(vec2 p){",
     " vec2 i=floor(p),f=fract(p);",
@@ -37,7 +37,7 @@
     " vec2 uv=gl_FragCoord.xy/u_res;",
     " float asp=u_res.x/max(u_res.y,1.);",
     " vec2 p=vec2(uv.x*asp,uv.y);",
-    " float t=u_time*u_speed;",
+    " float t=u_time;",               // u_time is already speed-integrated phase
     " float conv=1.+uv.y*1.85;",
     " vec2 pc=vec2((p.x-asp*.5)*conv+asp*.5,p.y);",
     " vec2 q=vec2(pc.x,pc.y*.30)*u_scale;",
@@ -133,7 +133,7 @@
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);   // shader outputs premultiplied colour
 
     var U = {};
-    ["u_res","u_time","u_mouse","u_speed","u_scale","u_base","u_center","u_side","u_bright","u_spark","u_open"]
+    ["u_res","u_time","u_mouse","u_scale","u_base","u_center","u_side","u_bright","u_spark","u_open"]
       .forEach(function (n) { U[n] = gl.getUniformLocation(prog, n); });
 
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -147,9 +147,16 @@
     }
 
     if (state.raf) cancelAnimationFrame(state.raf);
-    var t0 = performance.now();
+    /* Flame phase is integrated per frame (phase += dt * speed), never computed as
+       elapsed * speed. With elapsed time, every eased speed change is multiplied by how
+       long the tab has been open, so after idling in another tab a section change sent the
+       fire racing until reload. dt is clamped so a resumed rAF can't jump either. */
+    var phase = 0, last = performance.now();
 
     function frame() {
+      var now = performance.now();
+      var dt = Math.min((now - last) / 1000, 1 / 20);
+      last = now;
       resize();
       var k = .012;
       for (var key in state.target) state.cur[key] += (state.target[key] - state.cur[key]) * k;
@@ -161,9 +168,9 @@
       state.open += (openTarget - state.open) * (openTarget > state.open ? .02 : .006);
 
       gl.uniform2f(U.u_res, canvas.width, canvas.height);
-      gl.uniform1f(U.u_time, reduce ? 4.2 : (performance.now() - t0) / 1000);
+      if (!reduce) phase += dt * state.cur.speed;
+      gl.uniform1f(U.u_time, reduce ? 4.2 * state.cur.speed : phase);
       gl.uniform2f(U.u_mouse, state.mouse.x, state.mouse.y);
-      gl.uniform1f(U.u_speed,  state.cur.speed);
       gl.uniform1f(U.u_scale,  state.cur.scale);
       gl.uniform1f(U.u_base,   state.cur.base);
       gl.uniform1f(U.u_side,   state.cur.side);

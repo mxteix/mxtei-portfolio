@@ -107,6 +107,59 @@
     setTimeout(showAll, 2500);
   }
 
+  /* ---- reviews rail + "view all" dialog -------------------------------- */
+  function reviews() {
+    var sec = document.getElementById("reviews");
+    if (!sec) return;
+    var rail = sec.querySelector(".quotes");
+    var prev = sec.querySelector('[data-q="prev"]'), next = sec.querySelector('[data-q="next"]');
+    var dlg = sec.querySelector(".qdlg"), all = sec.querySelector('[data-q="all"]');
+    if (!rail) return;
+
+    function step() {
+      var card = rail.querySelector(".quote");
+      return card ? card.getBoundingClientRect().width + 14 : rail.clientWidth * .8;
+    }
+    function sync() {
+      var max = rail.scrollWidth - rail.clientWidth - 2;
+      if (prev) prev.disabled = rail.scrollLeft <= 2;
+      if (next) next.disabled = rail.scrollLeft >= max;
+      rail.classList.toggle("at-end", rail.scrollLeft >= max);
+    }
+    function go(dir) {
+      var n = Math.max(1, Math.floor(rail.clientWidth / step()));
+      rail.scrollBy({ left: dir * n * step(), behavior: "smooth" });
+    }
+    if (prev) prev.addEventListener("click", function () { go(-1); });
+    if (next) next.addEventListener("click", function () { go(1); });
+    rail.addEventListener("scroll", sync, { passive: true });
+    rail.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight") { e.preventDefault(); go(1); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
+    });
+    window.addEventListener("resize", sync);
+    sync();
+
+    if (!dlg || !all) return;
+    var count = rail.querySelectorAll(".quote").length;
+    all.textContent = "View all " + count;
+    if (typeof dlg.showModal !== "function") { all.hidden = true; return; }
+    var grid = dlg.querySelector(".qdlg-grid");
+    all.addEventListener("click", function () {
+      if (!grid.children.length) {
+        Array.prototype.forEach.call(rail.querySelectorAll(".quote"), function (q) {
+          grid.appendChild(q.cloneNode(true));
+        });
+      }
+      dlg.showModal();
+      document.body.classList.add("qlock");
+      grid.scrollTop = 0;
+    });
+    dlg.addEventListener("close", function () { document.body.classList.remove("qlock"); });
+    dlg.querySelector('[data-q="close"]').addEventListener("click", function () { dlg.close(); });
+    dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });   // backdrop
+  }
+
   /* ---- anchor scroll with header offset --------------------------------
      scrollIntoView lands under the sticky header, so scroll by hand. */
   function anchors() {
@@ -670,6 +723,7 @@
     payLinks();
     particles();
     reveals();
+    reviews();
     anchors();
     forms();
     if (window.mxFire) window.mxFire.start();

@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@1&display=swap">
-<link rel="stylesheet" href="assets/mx.css?v=f6563b5b">
+<link rel="stylesheet" href="assets/mx.css?v=0d8bd14d">
 <script>document.documentElement.className+=" js"</script>
 </head>
 <body data-fire-start="home">
@@ -159,59 +159,70 @@
 <section class="sec wrap" id="reviews" data-fire="work">
   <p class="eyebrow">Testimonials</p>
   <h2 class="h2">What clients <em class="serif">actually</em> say.</h2>
-  <div class="score"><b>4.8</b><span><i>★★★★★</i> average across 250+ projects</span></div>
-  <div class="quotes">
-    <figure class="quote reveal">
+  <div class="qbar">
+    <div class="score"><b>4.8</b><span><i>★★★★★</i> average across 250+ projects</span></div>
+    <div class="qctl">
+      <button type="button" class="qnav" data-q="prev" aria-label="Previous reviews">&larr;</button>
+      <button type="button" class="qnav" data-q="next" aria-label="Next reviews">&rarr;</button>
+      <button type="button" class="qall" data-q="all">View all</button>
+    </div>
+  </div>
+  <div class="quotes reveal" tabindex="0" aria-label="Client reviews, scroll sideways for more">
+    <figure class="quote">
       <div class="stars">★★★★★</div>
       <blockquote><p>Marcell set up my Discord server and grew the audience exactly how I wanted. Worth every penny — got precisely what I asked for.</p></blockquote>
       <figcaption class="who"><span class="av">MS</span><span><b>Marton S.</b><span>Private business owner</span></span></figcaption>
     </figure>
-    <figure class="quote reveal">
+    <figure class="quote">
       <div class="stars">★★★★★</div>
       <blockquote><p>Absolutely brilliant work. The bot he built runs our whole server now and it&rsquo;s never gone down once. Can&rsquo;t recommend enough.</p></blockquote>
       <figcaption class="who"><span class="av">BK</span><span><b>Bence Kovács</b><span>Community manager</span></span></figcaption>
     </figure>
-    <figure class="quote reveal">
+    <figure class="quote">
       <div class="stars">★★★★★</div>
       <blockquote><p>Helped me grow my Discord from basically nothing to over 10k in a few months. So happy with the results, and super easy to talk to.</p></blockquote>
       <figcaption class="who"><span class="av">RN</span><span><b>Réka Nagy</b><span>Content creator</span></span></figcaption>
     </figure>
-    <figure class="quote reveal">
+    <figure class="quote">
       <div class="stars">★★★★☆</div>
       <blockquote><p>Solid developer — delivered the website on time and the code was clean. Took a little back and forth to nail the scope, but the end result was great.</p></blockquote>
       <figcaption class="who"><span class="av">LC</span><span><b>Liam Carter</b><span>Startup founder</span></span></figcaption>
     </figure>
-    <figure class="quote reveal">
+    <figure class="quote">
       <div class="stars">★★★★★</div>
       <blockquote><p>Professional from start to finish. Marcell explained everything clearly and the onboarding flow he designed doubled our retention.</p></blockquote>
       <figcaption class="who"><span class="av">ZT</span><span><b>Zsófia Tóth</b><span>Server owner</span></span></figcaption>
     </figure>
-    <figure class="quote reveal">
+    <figure class="quote">
       <div class="stars">★★★★★</div>
       <blockquote><p>Best money I&rsquo;ve spent on my community. The giveaway and economy bot is exactly what my mods needed.</p></blockquote>
       <figcaption class="who"><span class="av">NB</span><span><b>Noah Bennett</b><span>Twitch streamer</span></span></figcaption>
     </figure>
-    <figure class="quote reveal">
+    <figure class="quote">
       <div class="stars">★★★★☆</div>
       <blockquote><p>The outreach automation saved our team so much time. A couple of small bugs at first, but he fixed them fast. No complaints.</p></blockquote>
       <figcaption class="who"><span class="av">DH</span><span><b>Dániel Horváth</b><span>Marketing lead</span></span></figcaption>
     </figure>
-    <figure class="quote reveal">
+    <figure class="quote">
       <div class="stars">★★★★★</div>
       <blockquote><p>One of the most reliable freelancers I&rsquo;ve worked with. Great communication, and he actually knows what makes a community stick.</p></blockquote>
       <figcaption class="who"><span class="av">AR</span><span><b>Aisha Rahman</b><span>Discord admin</span></span></figcaption>
     </figure>
-    <figure class="quote reveal">
+    <figure class="quote">
       <div class="stars">★★★★★</div>
       <blockquote><p>Sorted out our whole server structure and permissions mess in a weekend. Everything just works now.</p></blockquote>
       <figcaption class="who"><span class="av">GV</span><span><b>Gábor Varga</b><span>Esports org</span></span></figcaption>
     </figure>
-    <figure class="quote reveal">
+    <figure class="quote">
       <div class="stars">★★★★★</div>
       <blockquote><p>I had no idea where to start, and Marcell built my site and walked me through all of it. My business feels alive online now.</p></blockquote>
       <figcaption class="who"><span class="av">SR</span><span><b>Sofia Rossi</b><span>Small business owner</span></span></figcaption>
     </figure>
   </div>
+  <dialog class="qdlg" aria-labelledby="qdlg-h">
+    <div class="qdlg-top"><h3 id="qdlg-h">All reviews</h3><button type="button" class="qclose" data-q="close" aria-label="Close">&times;</button></div>
+    <div class="qdlg-grid"></div>
+  </dialog>
 </section>
 <section class="sec wrap" id="pricing" data-fire="pricing">
   <p class="eyebrow">Pricing</p>
@@ -367,9 +378,9 @@
   </div>
 </footer>
 </div>
-<script src="assets/fire.js?v=2b956d35"></script>
+<script src="assets/fire.js?v=1e648109"></script>
 <script src="assets/pricing.js?v=8d2bce02"></script>
-<script src="assets/site.js?v=79783d5f"></script>
+<script src="assets/site.js?v=f110b926"></script>
 <script data-goatcounter="https://mxtei.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 </body>
