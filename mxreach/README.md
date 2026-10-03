@@ -47,7 +47,8 @@ npm run dev       # http://localhost:3100
 
 ## Setting it up
 
-Roughly an hour, most of it in Google Cloud.
+**First run on your Mac: follow [SETUP.md](SETUP.md)**, the short click-by-click version.
+The sections below are the reference, including production.
 
 ### 1. Supabase (new project)
 

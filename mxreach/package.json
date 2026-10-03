@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start --port 3100",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "setup-sql": "node scripts/build-setup-sql.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
