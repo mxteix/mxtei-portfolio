@@ -1,0 +1,27 @@
+{
+  "name": "mxreach",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3100",
+    "build": "next build",
+    "start": "next start --port 3100",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.2",
+    "next": "^16.3.7",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@types/node": "^26.6.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.2"
+  }
+}

@@ -2,9 +2,13 @@
  * Today queue — data layer.
  *
  * Everything here runs server-side against the user's Supabase session,
- * so RLS is the tenancy boundary. No workspace_id filtering in app code:
- * if a policy is wrong, the query returns nothing rather than someone
- * else's contacts.
+ * so RLS is the tenancy boundary. The workspace filter below only narrows to
+ * the workspace being viewed; if a policy is wrong, the query returns
+ * nothing rather than someone else's contacts.
+ *
+ * State changes go through SQL functions (see the migration) so each one is
+ * a single transaction: a double click or a second tab can't advance a
+ * sequence twice.
  */
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -15,6 +19,8 @@ export type QueueItem = {
   channel: Channel
   subject: string | null
   body: string
+  /** Why this needs a look, e.g. a template variable had no value. */
+  note: string | null
   scheduledFor: string | null
   handle: string | null
   contact: {
@@ -24,6 +30,7 @@ export type QueueItem = {
     company: string | null
     roleTitle: string | null
   }
+  enrollmentId: string | null
   sequence: { id: string; name: string } | null
   stepPosition: number | null
 }
@@ -44,6 +51,7 @@ export async function getTodayQueue(workspaceId: string): Promise<QueueItem[]> {
       channel,
       subject_rendered,
       body_rendered,
+      note,
       scheduled_for,
       contact:contacts (
         id, name, email, company, role_title,
@@ -74,6 +82,7 @@ export async function getTodayQueue(workspaceId: string): Promise<QueueItem[]> {
       channel: row.channel,
       subject: row.subject_rendered,
       body: row.body_rendered ?? '',
+      note: row.note ?? null,
       scheduledFor: row.scheduled_for,
       handle: match?.handle ?? row.contact?.email ?? null,
       contact: {
@@ -83,12 +92,20 @@ export async function getTodayQueue(workspaceId: string): Promise<QueueItem[]> {
         company: row.contact?.company ?? null,
         roleTitle: row.contact?.role_title ?? null,
       },
+      enrollmentId: row.enrollment?.id ?? null,
       sequence: row.enrollment?.sequence
         ? { id: row.enrollment.sequence.id, name: row.enrollment.sequence.name }
         : null,
       stepPosition: row.step?.position ?? null,
     }
   })
+}
+
+async function rpc(fn: string, args: Record<string, unknown>): Promise<string> {
+  const supabase = createServerClient()
+  const { data, error } = await supabase.rpc(fn, args)
+  if (error) throw new Error(`${fn}: ${error.message}`)
+  return data as string
 }
 
 /**
@@ -98,66 +115,23 @@ export async function getTodayQueue(workspaceId: string): Promise<QueueItem[]> {
  * That's an accepted limitation of the model, and it's why the button
  * says "Sent" rather than "Send".
  *
- * Suppression is re-checked here, not just at queue time. A contact can
- * unsubscribe between the draft being queued and the user clicking send.
+ * Suppression is re-checked in the same transaction, not just at queue time.
+ * A contact can unsubscribe between the draft being queued and the user
+ * clicking send. Returns 'sent', 'suppressed' or 'already_handled' (a
+ * double-click, or another tab got here first — not an error).
  */
-export async function markSent(messageId: string): Promise<void> {
-  const supabase = createServerClient()
-
-  const { data: msg, error: loadError } = await supabase
-    .from('messages')
-    .select('id, workspace_id, channel, enrollment_id, contact_id, status')
-    .eq('id', messageId)
-    .single()
-
-  if (loadError) throw new Error(`load message: ${loadError.message}`)
-  if (msg.status !== 'awaiting_user') {
-    // Double-click, or another tab got here first. Not an error.
-    return
-  }
-
-  if (await isSuppressed(msg.workspace_id, msg.channel, msg.contact_id)) {
-    await supabase
-      .from('messages')
-      .update({ status: 'skipped', failed_reason: 'suppressed before send' })
-      .eq('id', messageId)
-    await stopEnrollment(msg.enrollment_id, 'unsubscribed')
-    return
-  }
-
-  const { data: updated, error } = await supabase
-    .from('messages')
-    .update({ status: 'sent', sent_at: new Date().toISOString() })
-    .eq('id', messageId)
-    .eq('status', 'awaiting_user')   // optimistic lock
-    .select('id')
-
-  if (error) throw new Error(`mark sent: ${error.message}`)
-  // Lost the race to another click: the winner advances, or we'd skip a step.
-  if (!updated?.length) return
-
-  if (msg.enrollment_id) await advanceEnrollment(msg.enrollment_id)
-  await audit(msg.workspace_id, 'message.sent_manually', 'message', messageId)
+export async function markSent(messageId: string) {
+  return rpc('mark_message_sent', { p_message: messageId }) as Promise<'sent' | 'suppressed' | 'already_handled'>
 }
 
 /** Skip this step without stopping the sequence. */
 export async function skipMessage(messageId: string, reason = 'skipped by user') {
-  const supabase = createServerClient()
+  return rpc('skip_message', { p_message: messageId, p_reason: reason })
+}
 
-  const { data: msg, error } = await supabase
-    .from('messages')
-    .update({ status: 'skipped', failed_reason: reason })
-    .eq('id', messageId)
-    .eq('status', 'awaiting_user')
-    .select('workspace_id, enrollment_id')
-    .maybeSingle()
-
-  if (error) throw new Error(`skip: ${error.message}`)
-  // Already sent or skipped elsewhere. Same as markSent: not an error.
-  if (!msg) return
-
-  if (msg.enrollment_id) await advanceEnrollment(msg.enrollment_id)
-  await audit(msg.workspace_id, 'message.skipped', 'message', messageId)
+/** Review mode: approve a drafted email so it sends from the connected mailbox. */
+export async function approveEmail(messageId: string) {
+  return rpc('approve_email', { p_message: messageId })
 }
 
 /** Push a draft back by N hours — "not today". */
@@ -186,6 +160,8 @@ export async function updateDraft(
     .update({
       ...(patch.subject !== undefined ? { subject_rendered: patch.subject } : {}),
       ...(patch.body !== undefined ? { body_rendered: patch.body } : {}),
+      // Editing is how a "fill in first_name" note gets resolved.
+      note: null,
     })
     .eq('id', messageId)
     .eq('status', 'awaiting_user')
@@ -203,120 +179,5 @@ export async function stopEnrollment(
   reason: 'replied' | 'unsubscribed' | 'bounced' | 'manual',
 ) {
   if (!enrollmentId) return
-  const supabase = createServerClient()
-
-  await supabase
-    .from('enrollments')
-    .update({
-      state: 'stopped',
-      stopped_reason: reason,
-      stopped_at: new Date().toISOString(),
-      next_action_at: null,
-    })
-    .eq('id', enrollmentId)
-
-  await supabase
-    .from('messages')
-    .update({ status: 'skipped', failed_reason: `enrollment stopped: ${reason}` })
-    .eq('enrollment_id', enrollmentId)
-    .in('status', ['queued', 'awaiting_user'])
-}
-
-// ── internals ────────────────────────────────────────────────
-
-async function advanceEnrollment(enrollmentId: string) {
-  const supabase = createServerClient()
-
-  const { data: enr } = await supabase
-    .from('enrollments')
-    .select('id, sequence_id, current_step')
-    .eq('id', enrollmentId)
-    .single()
-
-  if (!enr) return
-
-  const { data: next } = await supabase
-    .from('sequence_steps')
-    .select('position, delay_hours')
-    .eq('sequence_id', enr.sequence_id)
-    .gt('position', enr.current_step)
-    .order('position', { ascending: true })
-    .limit(1)
-    .maybeSingle()
-
-  if (!next) {
-    await supabase
-      .from('enrollments')
-      .update({
-        state: 'completed',
-        stopped_reason: 'completed',
-        stopped_at: new Date().toISOString(),
-        next_action_at: null,
-      })
-      .eq('id', enrollmentId)
-    return
-  }
-
-  await supabase
-    .from('enrollments')
-    .update({
-      current_step: next.position,
-      next_action_at: new Date(Date.now() + next.delay_hours * 3600_000).toISOString(),
-    })
-    .eq('id', enrollmentId)
-}
-
-async function isSuppressed(
-  workspaceId: string,
-  channel: string,
-  contactId: string,
-): Promise<boolean> {
-  const supabase = createServerClient()
-
-  const { data: ch } = await supabase
-    .from('contact_channels')
-    .select('handle')
-    .eq('contact_id', contactId)
-    .eq('channel', channel)
-    .maybeSingle()
-
-  // Same fallback as the queue: email often lives only on contacts.email.
-  let handle: string | null = ch?.handle ?? null
-  if (!handle && channel === 'email') {
-    const { data: c } = await supabase
-      .from('contacts')
-      .select('email')
-      .eq('id', contactId)
-      .maybeSingle()
-    handle = c?.email ?? null
-  }
-
-  if (!handle) return false
-  if (channel === 'email') handle = handle.trim().toLowerCase()
-
-  // Both scopes: workspace-level and global.
-  const { data } = await supabase
-    .from('suppressions')
-    .select('id')
-    .eq('channel', channel)
-    .eq('handle', handle)
-    .or(`workspace_id.eq.${workspaceId},workspace_id.is.null`)
-    .limit(1)
-
-  return (data?.length ?? 0) > 0
-}
-
-async function audit(
-  workspaceId: string,
-  action: string,
-  entity: string,
-  entityId: string,
-) {
-  const supabase = createServerClient()
-  await supabase.from('audit_log').insert({
-    workspace_id: workspaceId,
-    action,
-    entity,
-    entity_id: entityId,
-  })
+  await rpc('stop_enrollment', { p_enrollment: enrollmentId, p_reason: reason })
 }
