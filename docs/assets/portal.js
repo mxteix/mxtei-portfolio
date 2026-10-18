@@ -82,6 +82,23 @@
 
     var redirect = new URL("../portal/", location.href).href;
 
+    // Only offer the providers switched on in Supabase (Auth → Providers).
+    // Buttons start hidden; a disabled one would land on a raw JSON error.
+    // Turning a provider on in the dashboard is enough to make it appear.
+    fetch(SUPABASE.url + "/auth/v1/settings", { headers: { apikey: SUPABASE.anonKey } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (s) {
+        var on = (s && s.external) || {};
+        var any = false;
+        Array.prototype.forEach.call(document.querySelectorAll("[data-oauth]"), function (btn) {
+          var enabled = !!on[btn.getAttribute("data-oauth")];
+          show(btn, enabled);
+          any = any || enabled;
+        });
+        show(el("oauth-or"), any);
+      })
+      .catch(function () { /* email sign-in still works */ });
+
     Array.prototype.forEach.call(document.querySelectorAll("[data-oauth]"), function (btn) {
       btn.addEventListener("click", function () {
         notice(el("login-msg"), "Opening " + btn.getAttribute("data-oauth") + "…", "");
