@@ -1,0 +1,5 @@
+{
+  "_how": "Days Marcell can't take on work. Single days as \"YYYY-MM-DD\", ranges as {\"from\": \"YYYY-MM-DD\", \"to\": \"YYYY-MM-DD\"}. Past dates are ignored. leadDays = how many days from today the earliest pickable start is.",
+  "leadDays": 2,
+  "busy": []
+}

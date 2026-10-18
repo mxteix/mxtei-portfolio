@@ -735,3 +735,33 @@ body.qlock{overflow:hidden}
 .ref-status{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--t55);min-height:1em}
 .ref-status.ok{color:#7FD1A8}
 .ref-status.err{color:#FF8A6B}
+
+/* ---------- "when do you need it" calendar (contact form) ---------- */
+.whenfield{display:block}
+.whenlabel{font:500 12.5px var(--sans);color:var(--t55);margin:0 0 7px}
+.whenlabel .opt{color:var(--t50);font-weight:400}
+.cal{background:rgba(14,12,11,.8);border:1px solid var(--line-strong);border-radius:14px;padding:14px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-head b{font:600 14.5px var(--sans);color:var(--cream)}
+.cal-nav{width:34px;height:34px;border-radius:999px;border:1px solid var(--line-strong);background:transparent;
+  color:var(--cream);font:400 20px/1 var(--sans);cursor:pointer;transition:border-color .2s ease,background .2s ease}
+.cal-nav:hover:not([disabled]){border-color:rgba(255,90,31,.55);background:rgba(255,90,31,.08)}
+.cal-nav[disabled]{opacity:.3;cursor:default}
+.cal-dow,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow span{text-align:center;font:500 11.5px var(--sans);color:var(--t50);padding:4px 0}
+.cal-day{height:40px;border-radius:10px;border:0;background:transparent;color:var(--cream);
+  font:500 14px var(--sans);cursor:pointer;transition:background .15s ease,color .15s ease}
+.cal-day:hover:not([disabled]){background:rgba(255,90,31,.12)}
+.cal-day[disabled]{color:var(--t50);opacity:.45;cursor:default}
+.cal-day.is-busy{text-decoration:line-through}
+.cal-day.is-today{box-shadow:inset 0 0 0 1px var(--line-strong)}
+.cal-day.in-range{background:rgba(255,90,31,.16);border-radius:6px}
+.cal-day.is-start,.cal-day.is-end{background:var(--ember);color:var(--ink);border-radius:10px}
+.cal-day:focus-visible,.cal-nav:focus-visible,.cal-clear:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.cal-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+.cal-summary{margin:0;font-size:13px;line-height:1.45;color:var(--t55)}
+.cal-summary.set{color:var(--cream)}
+.cal-clear{flex:none;background:none;border:0;color:var(--spark);font:500 13px var(--sans);cursor:pointer;padding:4px}
+.form .cal-flex{display:flex;align-items:center;gap:8px;margin:10px 0 0;font:400 13.5px var(--sans);color:var(--t65);cursor:pointer}
+.form .cal-flex input{width:16px;height:16px;padding:0;margin:0;accent-color:var(--ember)}
+@media (max-width:420px){ .cal{padding:10px} .cal-day{height:36px;font-size:13px} .cal-dow,.cal-grid{gap:2px} }

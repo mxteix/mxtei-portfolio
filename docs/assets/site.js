@@ -254,6 +254,9 @@
           if (el.name) data[el.name] = el.value.trim();
         });
         if (!data.contact) { say("Add an email or Discord so I can reply.", "err"); return; }
+        // The calendar's choice rides in the message, so every path carries it.
+        if (data.dates) data.message = "When: " + data.dates + (data.message ? "\n\n" + data.message : "");
+        delete data.dates;
 
         sending = true;
         if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
@@ -713,6 +716,174 @@
     if (msg && !msg.value) { msg.value = quote.text; msg.setAttribute("data-from-calc", "1"); }
   }
 
+  /* ---- "when do you need it" calendar -----------------------------------
+     A date picker inside the contact form. Pick one day, or a start and an
+     end. Days Marcell is booked come from assets/availability.json and can't
+     be picked. The choice travels in the hidden "dates" field and is folded
+     into the message on submit, so it reaches the same inbox, database row
+     and Formspree fallback as everything else; no server change needed.     */
+  var MONTHS = ["January","February","March","April","May","June","July",
+                "August","September","October","November","December"];
+  var DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  function iso(d) {
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  }
+  function fromIso(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function fmtDay(d, withYear) {
+    return DAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.getMonth()].slice(0, 3) +
+      (withYear ? " " + d.getFullYear() : "");
+  }
+
+  function calendar() {
+    var root = document.querySelector("[data-when]");
+    if (!root) return;
+    var grid = root.querySelector("[data-cal-grid]");
+    var monthEl = root.querySelector("[data-cal-month]");
+    var prev = root.querySelector("[data-cal-prev]");
+    var next = root.querySelector("[data-cal-next]");
+    var summary = root.querySelector("[data-cal-summary]");
+    var clearBtn = root.querySelector("[data-cal-clear]");
+    var flexible = root.querySelector("[data-cal-flexible]");
+    var value = root.querySelector("[data-cal-value]");
+    var form = root.closest("form");
+    var HINT = summary.textContent;
+
+    var today = new Date(); today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    var busy = {};
+    var lead = 2;
+    var first = addDays(today, lead);
+    var last = addDays(today, 365);
+    var view = new Date(first.getFullYear(), first.getMonth(), 1);
+    var start = null, end = null, focus = first;
+
+    function isBusy(d) { return !!busy[iso(d)]; }
+    function pickable(d) { return d >= first && d <= last && !isBusy(d); }
+
+    function describe() {
+      if (!start) return "";
+      var s = fromIso(start), e = end ? fromIso(end) : null;
+      if (!e || end === start) return fmtDay(s, true);
+      var days = Math.round((e - s) / 864e5) + 1;
+      return fmtDay(s, s.getFullYear() !== e.getFullYear()) + " → " + fmtDay(e, true) + " (" + days + " days)";
+    }
+
+    function sync() {
+      var text = describe();
+      var crossesBusy = false;
+      if (start && end && end !== start) {
+        for (var d = fromIso(start); d <= fromIso(end); d = addDays(d, 1)) if (isBusy(d)) { crossesBusy = true; break; }
+      }
+      summary.textContent = text
+        ? (end ? text + "." : text + ". Pick an end day, or leave it as one day.") +
+          (crossesBusy ? " I'm booked on some of those days, so it may run a little longer." : "")
+        : HINT;
+      summary.className = "cal-summary" + (text ? " set" : "");
+      clearBtn.hidden = !text;
+      value.value = (text || (flexible.checked ? "No fixed dates" : "")) +
+        (text && flexible.checked ? " (flexible)" : "");
+    }
+
+    function render() {
+      monthEl.textContent = MONTHS[view.getMonth()] + " " + view.getFullYear();
+      prev.disabled = view <= new Date(first.getFullYear(), first.getMonth(), 1);
+      next.disabled = new Date(view.getFullYear(), view.getMonth() + 1, 1) > last;
+      grid.innerHTML = "";
+
+      var offset = (view.getDay() + 6) % 7; // Monday first
+      for (var i = 0; i < offset; i++) grid.appendChild(document.createElement("span"));
+
+      var dim = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+      var lo = start, hi = end || start;
+      for (var day = 1; day <= dim; day++) {
+        var d = new Date(view.getFullYear(), view.getMonth(), day);
+        var key = iso(d);
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "cal-day";
+        b.textContent = day;
+        b.setAttribute("data-date", key);
+        var label = fmtDay(d, true);
+        if (isBusy(d)) { b.classList.add("is-busy"); label += ", booked"; }
+        if (!pickable(d)) b.disabled = true;
+        if (key === iso(today)) b.classList.add("is-today");
+        if (lo && key === lo) b.classList.add("is-start");
+        if (hi && key === hi) b.classList.add("is-end");
+        if (lo && hi && key > lo && key < hi) b.classList.add("in-range");
+        b.setAttribute("aria-pressed", lo && key >= lo && key <= hi ? "true" : "false");
+        b.setAttribute("aria-label", label);
+        b.tabIndex = key === iso(focus) ? 0 : -1;
+        grid.appendChild(b);
+      }
+      // Keep one day reachable by Tab even when the focused one is off-screen.
+      if (!grid.querySelector('[tabindex="0"]')) {
+        var firstOn = grid.querySelector(".cal-day:not([disabled])");
+        if (firstOn) firstOn.tabIndex = 0;
+      }
+    }
+
+    function choose(key) {
+      if (!start || end) { start = key; end = null; }
+      else if (key < start) { start = key; }
+      else { end = key; }
+      focus = fromIso(key);
+      render(); sync();
+    }
+
+    grid.addEventListener("click", function (e) {
+      var b = e.target.closest(".cal-day");
+      if (b && !b.disabled) choose(b.getAttribute("data-date"));
+    });
+
+    grid.addEventListener("keydown", function (e) {
+      var step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+      if (!step) return;
+      e.preventDefault();
+      var d = addDays(focus, step);
+      if (d < first || d > last) return;
+      focus = d;
+      if (d.getMonth() !== view.getMonth() || d.getFullYear() !== view.getFullYear()) {
+        view = new Date(d.getFullYear(), d.getMonth(), 1);
+      }
+      render();
+      var b = grid.querySelector('[data-date="' + iso(d) + '"]');
+      if (b) b.focus();
+    });
+
+    prev.addEventListener("click", function () { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); render(); });
+    next.addEventListener("click", function () { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); render(); });
+    clearBtn.addEventListener("click", function () { start = end = null; render(); sync(); });
+    flexible.addEventListener("change", sync);
+    if (form) form.addEventListener("reset", function () {
+      start = end = null;
+      setTimeout(function () { flexible.checked = false; render(); sync(); }, 0);
+    });
+
+    render(); sync();
+
+    fetch("assets/availability.json", { cache: "no-cache" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (a) {
+        if (!a) return;
+        if (typeof a.leadDays === "number" && a.leadDays >= 0) {
+          lead = a.leadDays;
+          first = addDays(today, lead);
+          if (focus < first) focus = first;
+        }
+        (a.busy || []).forEach(function (b) {
+          var from = fromIso(typeof b === "string" ? b : b.from);
+          var to = fromIso(typeof b === "string" ? b : (b.to || b.from));
+          for (var d = from, n = 0; d <= to && n < 400; d = addDays(d, 1), n++) busy[iso(d)] = true;
+        });
+        // Drop a selection that just became unavailable.
+        if (start && !pickable(fromIso(start))) start = end = null;
+        if (end && !pickable(fromIso(end))) end = null;
+        render(); sync();
+      })
+      .catch(function () { /* without the file, every future day is pickable */ });
+  }
+
   function init() {
     nav();
     serviceLinks();
@@ -725,6 +896,7 @@
     reveals();
     reviews();
     anchors();
+    calendar();
     forms();
     if (window.mxFire) window.mxFire.start();
   }
